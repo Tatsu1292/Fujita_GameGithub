@@ -1,2 +1,4 @@
 C:\Users\g19029\Documents\作品Ⅲ\ゲーム制作11.17~1.29\My_Game_Production\Debug\My_Game_Production.exe
 C:\Users\g19029\Documents\作品Ⅲ\ゲーム制作11.17~1.29\My_Game_Production\Debug\My_Game_Production.pdb
+C:\github\作品Ⅲ_github\My_Game_Production\Debug\My_Game_Production.exe
+C:\github\作品Ⅲ_github\My_Game_Production\Debug\My_Game_Production.pdb

@@ -34,9 +34,15 @@
 #define IMAGE_LOAD_ERR_TITLE	TEXT("画像読み込みエラー")
 
 //画像のパス
-#define IMAGE_TITLE_BACK_PATH   TEXT(".\\IMAGE\\")
-#define IMAGE_TITLE_ROGO_PATH   TEXT(".\\IMAGE\\")
+#define IMAGE_TITLE_BACK_PATH   TEXT(".\\IMAGE\\Horrer_Hospital.jpg")
+#define IMAGE_TITLE_ROGO_PATH   TEXT(".\\IMAGE\\Title.png")
+#define IMAGE_EASY_ROGO_PATH    TEXT(".\\IMAGE\\Easy_logo.png")
+#define IMAGE_HARD_ROGO_PATH    TEXT(".\\IMAGE\\Hard_logo.png")
 #define IMAGE_QUES_BACK_PATH    TEXT(".\\IMAGE\\")
+
+//画像関連
+#define IMAGE_ROGO_ROTA         0.005      //拡大率
+#define IMAGE_ROGO_ROTA_MAX     1.0        //拡大率MAX
 
 //エラーメッセージ
 #define MUSIC_LOAD_ERR_TITLE	TEXT("音楽読み込みエラー")
@@ -98,6 +104,16 @@ typedef struct STRUCT_IMAGE
 	BOOL IsDraw = FALSE;		//描画できるか
 }IMAGE;	//画像構造体
 
+typedef struct STRUCT_IMAGE_ROTA
+{
+	IMAGE image;		//IMAGE構造体
+	double angle;		//回転率
+	double angleMAX;	//回転率MAX
+	double rate;		//拡大率
+	double rateMAX; 	//拡大率MAX
+
+}IMAGE_ROTA;	//回転拡大する画像の構造体
+
 typedef struct STRUCT_MUSIC
 {
 	char path[PATH_MAX];		//パス
@@ -125,6 +141,8 @@ int GameScene;		//ゲームシーンを管理
 //背景関連
 IMAGE ImageTitleBack;     //タイトル背景画像
 IMAGE ImageTitleRogo;     //タイトルロゴ画像
+IMAGE ImageEasyRogo;      //イージーロゴ画像
+IMAGE ImageHardRogo;      //ハードロゴ画像
 IMAGE ImageQuesBack;      //問題画面背景画像
 
 //音楽関連
@@ -593,13 +611,6 @@ VOID MY_PLAY_PROC(VOID)
 
 		return;
 	}
-	switch (GameScene)
-	{
-	case GAME_SCENE_QUES:
-		MY_PLAY_QUES();
-	case GAME_SCENE_STORY:
-		MY_PLAY_STORY();
-	}
 		
 
 	
@@ -691,6 +702,33 @@ BOOL MY_LOAD_IMAGE(VOID)
 	GetGraphSize(ImageTitleRogo.handle, &ImageTitleRogo.width, &ImageTitleRogo.height);	//画像の幅と高さを取得
 	ImageTitleRogo.x = GAME_WIDTH / 2 - ImageTitleRogo.width / 2;		//中央寄せ
 	ImageTitleRogo.y = GAME_HEIGHT / 2 - ImageTitleRogo.height / 2;				                    //中央寄せ+画像幅
+
+	//イージーロゴ
+	strcpy_s(ImageEasyRogo.path, IMAGE_EASY_ROGO_PATH);					//パスの設定
+	ImageEasyRogo.handle = LoadGraph(ImageEasyRogo.path);			//読み込み
+	if (ImageEasyRogo.handle == -1)
+	{
+		//エラーメッセージ表示
+		MessageBox(GetMainWindowHandle(), IMAGE_EASY_ROGO_PATH, IMAGE_LOAD_ERR_TITLE, MB_OK);
+		return FALSE;
+	}
+	GetGraphSize(ImageEasyRogo.handle, &ImageEasyRogo.width, &ImageEasyRogo.height);	//画像の幅と高さを取得
+	ImageEasyRogo.x = GAME_WIDTH / 2 - ImageEasyRogo.width / 2;		//中央寄せ
+	ImageEasyRogo.y = GAME_HEIGHT / 2 - ImageEasyRogo.height / 2;				                    //中央寄せ+画像幅
+
+	//ハードロゴ
+	strcpy_s(ImageHardRogo.path, IMAGE_HARD_ROGO_PATH);					//パスの設定
+	ImageHardRogo.handle = LoadGraph(ImageHardRogo.path);			//読み込み
+	if (ImageHardRogo.handle == -1)
+	{
+		//エラーメッセージ表示
+		MessageBox(GetMainWindowHandle(), IMAGE_HARD_ROGO_PATH, IMAGE_LOAD_ERR_TITLE, MB_OK);
+		return FALSE;
+	}
+	GetGraphSize(ImageHardRogo.handle, &ImageHardRogo.width, &ImageHardRogo.height);	//画像の幅と高さを取得
+	ImageHardRogo.x = GAME_WIDTH / 2 - ImageHardRogo.width / 2;		//中央寄せ
+	ImageHardRogo.y = GAME_HEIGHT / 2 - ImageHardRogo.height / 2;				                    //中央寄せ+画像幅
+
 	return TRUE;
 }
 

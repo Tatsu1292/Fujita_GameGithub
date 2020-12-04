@@ -1,0 +1,2 @@
+﻿My_Game.obj : error LNK2019: 未解決の外部シンボル "void __cdecl MY_PLAY_STORY(void)" (?MY_PLAY_STORY@@YAXXZ) が関数 "void __cdecl MY_PLAY_PROC(void)" (?MY_PLAY_PROC@@YAXXZ) で参照されました
+C:\github\作品Ⅲ_github\My_Game_Production\x64\Debug\My_Game_Production.exe : fatal error LNK1120: 1 件の未解決の外部参照
