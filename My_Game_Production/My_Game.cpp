@@ -3,9 +3,9 @@
 #include "resource.h"
 
 //########## マクロ定義 ##########
-#define GAME_WIDTH			800	//画面の横の大きさ
-#define GAME_HEIGHT			600	//画面の縦の大きさ
-#define GAME_COLOR			32	//画面のカラービット
+#define GAME_WIDTH			1280	//画面の横の大きさ
+#define GAME_HEIGHT			720	    //画面の縦の大きさ
+#define GAME_COLOR			32	    //画面のカラービット
 
 #define GAME_WINDOW_BAR		0					//タイトルバーはデフォルトにする
 #define GAME_WINDOW_NAME	"GAME TITLE"		//ウィンドウのタイトル
@@ -34,7 +34,7 @@
 #define IMAGE_LOAD_ERR_TITLE	TEXT("画像読み込みエラー")
 
 //画像のパス
-#define IMAGE_TITLE_BACK_PATH   TEXT(".\\IMAGE\\Horrer_Hospital.jpg")
+#define IMAGE_TITLE_BACK_PATH   TEXT(".\\IMAGE\\hospital_Aroom.jpg")
 #define IMAGE_TITLE_ROGO_PATH   TEXT(".\\IMAGE\\Title.png")
 #define IMAGE_EASY_ROGO_PATH    TEXT(".\\IMAGE\\Easy_logo.png")
 #define IMAGE_HARD_ROGO_PATH    TEXT(".\\IMAGE\\Hard_logo.png")
@@ -48,7 +48,7 @@
 #define MUSIC_LOAD_ERR_TITLE	TEXT("音楽読み込みエラー")
 
 //音楽のパス
-#define MUSIC_TITLE_PATH        TEXT(".\\MUSIC\\")
+#define MUSIC_TITLE_PATH        TEXT(".\\MUSIC\\衛星の夜.mp3")
 
 //閉じるボタンを押したとき
 #define MSG_CLOSE_TITLE			TEXT("終了メッセージ")
@@ -102,6 +102,10 @@ typedef struct STRUCT_IMAGE
 	int width;					//幅
 	int height;					//高さ
 	BOOL IsDraw = FALSE;		//描画できるか
+
+	RECT coll;					//当たり判定
+	iPOINT collBeforePt;		//当たる前の座標
+
 }IMAGE;	//画像構造体
 
 typedef struct STRUCT_IMAGE_ROTA
@@ -140,6 +144,7 @@ int GameScene;		//ゲームシーンを管理
 
 //背景関連
 IMAGE ImageTitleBack;     //タイトル背景画像
+IMAGE ImagePlayBack;      //プレイ背景画像
 IMAGE ImageTitleRogo;     //タイトルロゴ画像
 IMAGE ImageEasyRogo;      //イージーロゴ画像
 IMAGE ImageHardRogo;      //ハードロゴ画像
@@ -568,6 +573,63 @@ VOID MY_START_PROC(VOID)
 		PlaySoundMem(BGM.handle, DX_PLAYTYPE_LOOP);
 	}
 
+	//画像内にマウスがいれば
+	if (mouse.Point.x >= ImageEasyRogo.x && mouse.Point.x <= ImageEasyRogo.width
+		&& mouse.Point.y >= ImageEasyRogo.y && mouse.Point.y <= ImageEasyRogo.height)
+	{
+		/*
+		//マウスを勢いよく動かすと、壁抜けするバグが発生
+		//プレイヤーの中心位置を設定する
+		player.CenterX = mouse.Point.x;
+		player.CenterY = mouse.Point.y;
+		*/
+
+		//マウスの当たる前の位置から、現在位置の差がこの数値以内なら、動ける
+		int MoveValue = 100;
+
+		//マウスの移動量が少ないときに、移動させる
+		if (abs(player.collBeforePt.x - mouse.Point.x) < MoveValue
+			&& abs(player.collBeforePt.y - mouse.Point.y) < MoveValue)
+		{
+			//プレイヤーの中心位置を設定する
+			player.CenterX = mouse.Point.x;
+			player.CenterY = mouse.Point.y;
+		}
+		else
+		{
+			//プレイヤーの中心位置を設定する
+			player.CenterX = player.collBeforePt.x;
+			player.CenterY = player.collBeforePt.y;
+
+			//マウスの位置を設定する
+			SetMousePoint(player.collBeforePt.x, player.collBeforePt.y);
+		}
+
+	}
+
+
+	//当たり判定
+	player.coll.left = player.CenterX - mapChip.width / 2 + 5;
+	player.coll.top = player.CenterY - mapChip.height / 2 + 5;
+	player.coll.right = player.CenterX + mapChip.width / 2 - 5;
+	player.coll.bottom = player.CenterY + mapChip.height / 2 - 5;
+
+	BOOL IsMove = TRUE;
+
+	//プレイヤーとマップがあたっていたら
+	if (MY_CHECK_MAP1_PLAYER_COLL(player.coll) == TRUE)
+	{
+
+		/*[キー操作ここから]
+		player.CenterX = player.collBeforePt.x;
+		player.CenterY = player.collBeforePt.y;
+		*/
+
+		SetMousePoint(player.collBeforePt.x, player.collBeforePt.y);
+
+		IsMove = FALSE;
+	}
+
 	return;
 }
 
@@ -579,6 +641,10 @@ VOID MY_START_DRAW(VOID)
 
 	//タイトルロゴを描画する
 	DrawGraph(ImageTitleRogo.x, ImageTitleRogo.y, ImageTitleRogo.handle, TRUE);
+
+	//難易度ロゴを描画する
+	DrawGraph(ImageEasyRogo.x, ImageEasyRogo.y, ImageEasyRogo.handle, TRUE);
+	DrawGraph(ImageHardRogo.x, ImageHardRogo.y, ImageHardRogo.handle, TRUE);
 
 	return;
 }
@@ -611,6 +677,19 @@ VOID MY_PLAY_PROC(VOID)
 
 		return;
 	}
+	
+	//BGMが流れていないなら
+	if (CheckSoundMem(BGM.handle) == 0)
+	{
+		//BGMの音量を下げる
+		ChangeVolumeSoundMem(255 * 50 / 100, BGM.handle);	//50%の音量にする
+
+		//BGMを流す
+		//DX_PLAYTYPE_NORMAL:　ノーマル再生
+		//DX_PLAYTYPE_BACK  : バックグラウンド再生
+		//DX_PLAYTYPE_LOOP  : ループ再生
+		PlaySoundMem(BGM.handle, DX_PLAYTYPE_LOOP);
+	}
 		
 
 	
@@ -620,6 +699,8 @@ VOID MY_PLAY_PROC(VOID)
 //プレイ画面の描画
 VOID MY_PLAY_DRAW(VOID)
 {
+	//背景を描画する
+	DrawGraph(ImagePlayBack.x, ImagePlayBack.y, ImagePlayBack.handle, TRUE);
 
 	return;
 }
@@ -699,9 +780,9 @@ BOOL MY_LOAD_IMAGE(VOID)
 		MessageBox(GetMainWindowHandle(), IMAGE_TITLE_ROGO_PATH, IMAGE_LOAD_ERR_TITLE, MB_OK);
 		return FALSE;
 	}
-	GetGraphSize(ImageTitleRogo.handle, &ImageTitleRogo.width, &ImageTitleRogo.height);	//画像の幅と高さを取得
-	ImageTitleRogo.x = GAME_WIDTH / 2 - ImageTitleRogo.width / 2;		//中央寄せ
-	ImageTitleRogo.y = GAME_HEIGHT / 2 - ImageTitleRogo.height / 2;				                    //中央寄せ+画像幅
+	GetGraphSize(ImageTitleRogo.handle, &ImageTitleRogo.width, &ImageTitleRogo.height);	      //画像の幅と高さを取得
+	ImageTitleRogo.x = GAME_WIDTH / 2 - ImageTitleRogo.width / 2;		                      //中央寄せ
+	ImageTitleRogo.y = GAME_HEIGHT / 2 - ImageTitleRogo.height / 2 - 100;				      //中央寄せ+画像幅
 
 	//イージーロゴ
 	strcpy_s(ImageEasyRogo.path, IMAGE_EASY_ROGO_PATH);					//パスの設定
@@ -713,8 +794,8 @@ BOOL MY_LOAD_IMAGE(VOID)
 		return FALSE;
 	}
 	GetGraphSize(ImageEasyRogo.handle, &ImageEasyRogo.width, &ImageEasyRogo.height);	//画像の幅と高さを取得
-	ImageEasyRogo.x = GAME_WIDTH / 2 - ImageEasyRogo.width / 2;		//中央寄せ
-	ImageEasyRogo.y = GAME_HEIGHT / 2 - ImageEasyRogo.height / 2;				                    //中央寄せ+画像幅
+	ImageEasyRogo.x = GAME_WIDTH / 2 - ImageEasyRogo.width - ImageEasyRogo.width / 2;   //中央寄せ-画像幅
+	ImageEasyRogo.y = GAME_HEIGHT / 2 + ImageEasyRogo.height;				            //中央寄せ+画像幅
 
 	//ハードロゴ
 	strcpy_s(ImageHardRogo.path, IMAGE_HARD_ROGO_PATH);					//パスの設定
@@ -726,8 +807,8 @@ BOOL MY_LOAD_IMAGE(VOID)
 		return FALSE;
 	}
 	GetGraphSize(ImageHardRogo.handle, &ImageHardRogo.width, &ImageHardRogo.height);	//画像の幅と高さを取得
-	ImageHardRogo.x = GAME_WIDTH / 2 - ImageHardRogo.width / 2;		//中央寄せ
-	ImageHardRogo.y = GAME_HEIGHT / 2 - ImageHardRogo.height / 2;				                    //中央寄せ+画像幅
+	ImageHardRogo.x = GAME_WIDTH / 2 + ImageHardRogo.width / 2;		                    //中央寄せ
+	ImageHardRogo.y = GAME_HEIGHT / 2 + ImageHardRogo.height;				            //中央寄せ+画像幅
 
 	return TRUE;
 }
