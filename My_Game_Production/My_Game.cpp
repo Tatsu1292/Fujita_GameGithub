@@ -39,10 +39,11 @@
 #define IMAGE_EASY_ROGO_PATH    TEXT(".\\IMAGE\\Easy_logo.png")
 #define IMAGE_HARD_ROGO_PATH    TEXT(".\\IMAGE\\Hard_logo.png")
 #define IMAGE_QUES_BACK_PATH    TEXT(".\\IMAGE\\")
+#define IMAGE_QUES_1_PATH       TEXT(".\\IMAGE\\Qusetion1.png")
 
 //画像関連
-#define IMAGE_ROGO_ROTA         0.005      //拡大率
-#define IMAGE_ROGO_ROTA_MAX     1.0        //拡大率MAX
+#define IMAGE_ROGO_ROTA         1.0      //拡大率
+#define IMAGE_ROGO_ROTA_MAX     2.0      //拡大率MAX
 
 //エラーメッセージ
 #define MUSIC_LOAD_ERR_TITLE	TEXT("音楽読み込みエラー")
@@ -54,13 +55,23 @@
 #define MSG_CLOSE_TITLE			TEXT("終了メッセージ")
 #define MSG_CLOSE_CAPTION		TEXT("ゲームを終了しますか？")
 
+//問題数
+#define QUES_MAX                5
+
 enum GAME_SCENE {
 	GAME_SCENE_START,
 	GAME_SCENE_PLAY,
 	GAME_SCENE_QUES,
+	GAME_SCENE_ROOT,
 	GAME_SCENE_STORY,
 	GAME_SCENE_END,
 };	//ゲームのシーン
+
+enum QUES_END {
+	QUES_END_RIGHT,	//正解
+	QUES_END_WRONG	//不正解
+};	//問題の正誤
+
 
 //int型のPOINT構造体
 typedef struct STRUCT_I_POINT
@@ -114,7 +125,7 @@ typedef struct STRUCT_IMAGE_ROTA
 	double angle;		//回転率
 	double angleMAX;	//回転率MAX
 	double rate;		//拡大率
-	double rateMAX; 	//拡大率MAX
+	double rateMAX;		//拡大率MAX
 
 }IMAGE_ROTA;	//回転拡大する画像の構造体
 
@@ -143,15 +154,21 @@ MOUSE mouse;
 int GameScene;		//ゲームシーンを管理
 
 //背景関連
-IMAGE ImageTitleBack;     //タイトル背景画像
-IMAGE ImagePlayBack;      //プレイ背景画像
-IMAGE ImageTitleRogo;     //タイトルロゴ画像
-IMAGE ImageEasyRogo;      //イージーロゴ画像
-IMAGE ImageHardRogo;      //ハードロゴ画像
-IMAGE ImageQuesBack;      //問題画面背景画像
+IMAGE ImageTitleBack;          //タイトル背景画像
+IMAGE ImagePlayBack;           //プレイ背景画像
+IMAGE ImageTitleRogo;          //タイトルロゴ画像
+IMAGE_ROTA ImageEasyRogo;      //イージーロゴ画像
+IMAGE_ROTA ImageHardRogo;      //ハードロゴ画像
+IMAGE ImageQuesBack;           //問題画面背景画像
+IMAGE ImageQues[QUES_MAX];     //問題画像
 
 //音楽関連
 MUSIC BGM;			//ゲームのBGM
+
+int QuesKind;					//問題の正誤状態
+
+//問題数カウント
+int CountQues;
 
 
 //########## プロトタイプ宣言 ##########
@@ -190,6 +207,10 @@ VOID MY_PLAY_QUES_DRAW(VOID);  //問題画面の描画
 VOID MY_PLAY_STORY(VOID);       //ストーリー画面
 VOID MY_PLAY_STORY_PROC(VOID);  //ストーリー画面の処理
 VOID MY_PLAY_STORY_DRAW(VOID);  //ストーリー画面の描画
+
+VOID MY_PLAY_ROOT(VOID);       //ルート分岐画面
+VOID MY_PLAY_ROOT_PROC(VOID);  //ルート分岐画面の処理
+VOID MY_PLAY_ROOT_DRAW(VOID);  //ルート分岐画面の描画
 
 VOID MY_END(VOID);			//エンド画面
 VOID MY_END_PROC(VOID);		//エンド画面の処理
@@ -257,6 +278,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 			break;
 		case GAME_SCENE_PLAY:
 			MY_PLAY();	//プレイ画面
+			break;
+		case GAME_SCENE_QUES:
+			MY_PLAY_QUES();	//問題画面
+			break;
+		case GAME_SCENE_STORY:
+			MY_PLAY_STORY();	//ストーリー画面
+			break;
+		case GAME_SCENE_ROOT:
+			MY_PLAY_ROOT();	//ルート分岐画面
 			break;
 		case GAME_SCENE_END:
 			MY_END();	//エンド画面
@@ -543,23 +573,24 @@ VOID MY_START(VOID)
 //スタート画面の処理
 VOID MY_START_PROC(VOID)
 {
-	//エンターキーを押したら、プレイシーンへ移動する
-	if (MY_KEY_DOWN(KEY_INPUT_RETURN) == TRUE)
-	{
-		//BGMが流れているなら
-		if (CheckSoundMem(BGM.handle) != 0)
+	//難易度を押したら、プレイシーンへ移動する
+		if (MY_MOUSE_DOWN(MOUSE_INPUT_LEFT) == TRUE)
 		{
-			StopSoundMem(BGM.handle);	//BGMを止める
+			//BGMが流れているなら
+			if (CheckSoundMem(BGM.handle) != 0)
+			{
+				StopSoundMem(BGM.handle);	//BGMを止める
+			}
+
+			//ゲームの終了状態を初期化する
+			QuesKind = QUES_END_WRONG;
+
+			//ゲームのシーンをプレイ画面にする
+			GameScene = GAME_SCENE_PLAY;
+
+			return;
 		}
-
-		MY_PLAY_INIT();	//ゲーム初期化
-
-		//ゲームのシーンをプレイ画面にする
-		GameScene = GAME_SCENE_PLAY;
-
-		return;
-	}
-
+	
 	//BGMが流れていないなら
 	if (CheckSoundMem(BGM.handle) == 0)
 	{
@@ -571,63 +602,6 @@ VOID MY_START_PROC(VOID)
 		//DX_PLAYTYPE_BACK  : バックグラウンド再生
 		//DX_PLAYTYPE_LOOP  : ループ再生
 		PlaySoundMem(BGM.handle, DX_PLAYTYPE_LOOP);
-	}
-
-	//画像内にマウスがいれば
-	if (mouse.Point.x >= ImageEasyRogo.x && mouse.Point.x <= ImageEasyRogo.width
-		&& mouse.Point.y >= ImageEasyRogo.y && mouse.Point.y <= ImageEasyRogo.height)
-	{
-		/*
-		//マウスを勢いよく動かすと、壁抜けするバグが発生
-		//プレイヤーの中心位置を設定する
-		player.CenterX = mouse.Point.x;
-		player.CenterY = mouse.Point.y;
-		*/
-
-		//マウスの当たる前の位置から、現在位置の差がこの数値以内なら、動ける
-		int MoveValue = 100;
-
-		//マウスの移動量が少ないときに、移動させる
-		if (abs(player.collBeforePt.x - mouse.Point.x) < MoveValue
-			&& abs(player.collBeforePt.y - mouse.Point.y) < MoveValue)
-		{
-			//プレイヤーの中心位置を設定する
-			player.CenterX = mouse.Point.x;
-			player.CenterY = mouse.Point.y;
-		}
-		else
-		{
-			//プレイヤーの中心位置を設定する
-			player.CenterX = player.collBeforePt.x;
-			player.CenterY = player.collBeforePt.y;
-
-			//マウスの位置を設定する
-			SetMousePoint(player.collBeforePt.x, player.collBeforePt.y);
-		}
-
-	}
-
-
-	//当たり判定
-	player.coll.left = player.CenterX - mapChip.width / 2 + 5;
-	player.coll.top = player.CenterY - mapChip.height / 2 + 5;
-	player.coll.right = player.CenterX + mapChip.width / 2 - 5;
-	player.coll.bottom = player.CenterY + mapChip.height / 2 - 5;
-
-	BOOL IsMove = TRUE;
-
-	//プレイヤーとマップがあたっていたら
-	if (MY_CHECK_MAP1_PLAYER_COLL(player.coll) == TRUE)
-	{
-
-		/*[キー操作ここから]
-		player.CenterX = player.collBeforePt.x;
-		player.CenterY = player.collBeforePt.y;
-		*/
-
-		SetMousePoint(player.collBeforePt.x, player.collBeforePt.y);
-
-		IsMove = FALSE;
 	}
 
 	return;
@@ -643,8 +617,8 @@ VOID MY_START_DRAW(VOID)
 	DrawGraph(ImageTitleRogo.x, ImageTitleRogo.y, ImageTitleRogo.handle, TRUE);
 
 	//難易度ロゴを描画する
-	DrawGraph(ImageEasyRogo.x, ImageEasyRogo.y, ImageEasyRogo.handle, TRUE);
-	DrawGraph(ImageHardRogo.x, ImageHardRogo.y, ImageHardRogo.handle, TRUE);
+	DrawRotaGraph(ImageEasyRogo.image.x, ImageEasyRogo.image.y, ImageEasyRogo.rate, 0, ImageEasyRogo.image.handle, TRUE);
+	DrawRotaGraph(ImageHardRogo.image.x, ImageHardRogo.image.y, ImageHardRogo.rate, 0, ImageHardRogo.image.handle, TRUE);
 
 	return;
 }
@@ -662,7 +636,10 @@ VOID MY_PLAY(VOID)
 	MY_PLAY_PROC();	//プレイ画面の処理
 	MY_PLAY_DRAW();	//プレイ画面の描画
 
-	DrawString(0, 0, "プレイ画面(スペースキーを押して下さい)", GetColor(255, 255, 255));
+	DrawString(0, 0, "プレイ画面(スペースキーでエンドへ)", GetColor(255, 255, 255));
+	DrawString(0, 20, "プレイ画面(Sキーでストーリーへ)", GetColor(255, 255, 255));
+	DrawString(0, 40, "プレイ画面(Qキーで問題へ)", GetColor(255, 255, 255));
+	DrawString(0, 60, "プレイ画面(Rキーでルート分岐へ)", GetColor(255, 255, 255));
 	return;
 }
 
@@ -674,6 +651,30 @@ VOID MY_PLAY_PROC(VOID)
 	{
 		//ゲームのシーンをエンド画面にする
 		GameScene = GAME_SCENE_END;
+
+		return;
+	}
+	//Sキーを押したら、ストーリーシーンへ移動する
+	else if (MY_KEY_DOWN(KEY_INPUT_S) == TRUE)
+	{
+		//ゲームのシーンをエンド画面にする
+		GameScene = GAME_SCENE_STORY;
+
+		return;
+	}
+	//Rキーを押したら、ルート分岐シーンへ移動する
+	else if (MY_KEY_DOWN(KEY_INPUT_R) == TRUE)
+	{
+		//ゲームのシーンをエンド画面にする
+		GameScene = GAME_SCENE_ROOT;
+
+		return;
+	}
+	//Qキーを押したら、問題シーンへ移動する
+	else if (MY_KEY_DOWN(KEY_INPUT_Q) == TRUE)
+	{
+		//ゲームのシーンをエンド画面にする
+		GameScene = GAME_SCENE_QUES;
 
 		return;
 	}
@@ -708,19 +709,197 @@ VOID MY_PLAY_DRAW(VOID)
 //問題画面
 VOID MY_PLAY_QUES()
 {
-	VOID MY_PLAY_STORY_PROC();
-	VOID MY_PLAY_STORY_DRAW();
+	MY_PLAY_QUES_PROC();
+	MY_PLAY_QUES_DRAW();
+
+	DrawString(0, 0, "プレイ画面(スペースキーでエンドへ)", GetColor(255, 255, 255));
+	DrawString(0, 20, "プレイ画面(Sキーでストーリーへ)", GetColor(255, 255, 255));
+	DrawString(0, 40, "プレイ画面(Tキーでタイトルへ)", GetColor(255, 255, 255));
+	DrawString(0, 60, "プレイ画面(Rキーでルート分岐へ)", GetColor(255, 255, 255));
+
+	return;
+}
+
+VOID MY_PLAY_QUES_PROC()
+{
+	//Sキーを押したら、ストーリーシーンへ移動する
+	if (MY_KEY_DOWN(KEY_INPUT_S) == TRUE)
+	{
+		//ゲームのシーンをエンド画面にする
+		GameScene = GAME_SCENE_STORY;
+
+		return;
+	}
+	//Rキーを押したら、ルート分岐シーンへ移動する
+	else if (MY_KEY_DOWN(KEY_INPUT_R) == TRUE)
+	{
+		//ゲームのシーンをエンド画面にする
+		GameScene = GAME_SCENE_ROOT;
+
+		return;
+	}
+	//Tキーを押したら、タイトルシーンへ移動する
+	else if (MY_KEY_DOWN(KEY_INPUT_T) == TRUE)
+	{
+		//ゲームのシーンをエンド画面にする
+		GameScene = GAME_SCENE_START;
+
+		return;
+	}
+	//スペースキーを押したら、エンドシーンへ移動する
+	else if (MY_KEY_DOWN(KEY_INPUT_SPACE) == TRUE)
+	{
+		//ゲームのシーンをエンド画面にする
+		GameScene = GAME_SCENE_END;
+
+		return;
+	}
+
+	//BGMが流れていないなら
+	if (CheckSoundMem(BGM.handle) == 0)
+	{
+		//BGMの音量を下げる
+		ChangeVolumeSoundMem(255 * 50 / 100, BGM.handle);	//50%の音量にする
+
+		//BGMを流す
+		//DX_PLAYTYPE_NORMAL:　ノーマル再生
+		//DX_PLAYTYPE_BACK  : バックグラウンド再生
+		//DX_PLAYTYPE_LOOP  : ループ再生
+		PlaySoundMem(BGM.handle, DX_PLAYTYPE_LOOP);
+	}
+
+	if (MY_MOUSE_DOWN(MOUSE_INPUT_LEFT) == TRUE)
+	{
+		ImageQues[CountQues].IsDraw = TRUE;
+		/*if (QuesKind == QUES_END_RIGHT)
+		{
+			CountQues++;
+			QuesKind = QUES_END_WRONG;
+		}
+		else if (QuesKind == QUES_END_WRONG)
+		{
+			CountQues++;
+		}*/
+	}
+
+	return;
+}
+
+VOID MY_PLAY_QUES_DRAW()
+{
+	//問題を描画する
+	if (ImageQues[CountQues].IsDraw == TRUE)
+	{
+		DrawGraph(ImageQues[CountQues].x, ImageQues[CountQues].y, ImageQues[CountQues].handle, TRUE);
+	}
+	
+
+
+	return;
+}
+
+//ストーリー画面
+VOID MY_PLAY_STORY()
+{
+	MY_PLAY_STORY_PROC();
+	MY_PLAY_STORY_DRAW();
+
+	DrawString(0, 0, "プレイ画面(スペースキーでエンドへ)", GetColor(255, 255, 255));
+	DrawString(0, 20, "プレイ画面(Tキーでタイトルへ)", GetColor(255, 255, 255));
+	DrawString(0, 40, "プレイ画面(Rキーでルート分岐へ)", GetColor(255, 255, 255));
+
 
 	return;
 }
 
 VOID MY_PLAY_STORY_PROC()
 {
+	//Rキーを押したら、ルート分岐シーンへ移動する
+	if (MY_KEY_DOWN(KEY_INPUT_R) == TRUE)
+	{
+		//ゲームのシーンをエンド画面にする
+		GameScene = GAME_SCENE_ROOT;
+
+		return;
+	}
+	//Tキーを押したら、タイトルシーンへ移動する
+	else if (MY_KEY_DOWN(KEY_INPUT_T) == TRUE)
+	{
+		//ゲームのシーンをエンド画面にする
+		GameScene = GAME_SCENE_START;
+
+		return;
+	}
+	//スペースキーを押したら、エンドシーンへ移動する
+	else if (MY_KEY_DOWN(KEY_INPUT_SPACE) == TRUE)
+	{
+		//ゲームのシーンをエンド画面にする
+		GameScene = GAME_SCENE_END;
+
+		return;
+	}
+
+	//BGMが流れていないなら
+	else if (CheckSoundMem(BGM.handle) == 0)
+	{
+		//BGMの音量を下げる
+		ChangeVolumeSoundMem(255 * 50 / 100, BGM.handle);	//50%の音量にする
+
+		//BGMを流す
+		//DX_PLAYTYPE_NORMAL:　ノーマル再生
+		//DX_PLAYTYPE_BACK  : バックグラウンド再生
+		//DX_PLAYTYPE_LOOP  : ループ再生
+		PlaySoundMem(BGM.handle, DX_PLAYTYPE_LOOP);
+	}
 
 	return;
 }
 
 VOID MY_PLAY_STORY_DRAW()
+{
+	
+	return;
+}
+
+//ルート分岐画面
+VOID MY_PLAY_ROOT()
+{
+	MY_PLAY_ROOT_PROC();
+	MY_PLAY_ROOT_DRAW();
+
+	DrawString(0, 0, "プレイ画面(スペースキーでエンドへ)", GetColor(255, 255, 255));
+
+	return;
+}
+
+VOID MY_PLAY_ROOT_PROC()
+{
+	//スペースキーを押したら、エンドシーンへ移動する
+	if (MY_KEY_DOWN(KEY_INPUT_SPACE) == TRUE)
+	{
+		//ゲームのシーンをエンド画面にする
+		GameScene = GAME_SCENE_END;
+
+		return;
+	}
+
+	//BGMが流れていないなら
+	if (CheckSoundMem(BGM.handle) == 0)
+	{
+		//BGMの音量を下げる
+		ChangeVolumeSoundMem(255 * 50 / 100, BGM.handle);	//50%の音量にする
+
+		//BGMを流す
+		//DX_PLAYTYPE_NORMAL:　ノーマル再生
+		//DX_PLAYTYPE_BACK  : バックグラウンド再生
+		//DX_PLAYTYPE_LOOP  : ループ再生
+		PlaySoundMem(BGM.handle, DX_PLAYTYPE_LOOP);
+	}
+
+	return;
+}
+
+VOID MY_PLAY_ROOT_DRAW()
 {
 	return;
 }
@@ -785,30 +964,49 @@ BOOL MY_LOAD_IMAGE(VOID)
 	ImageTitleRogo.y = GAME_HEIGHT / 2 - ImageTitleRogo.height / 2 - 100;				      //中央寄せ+画像幅
 
 	//イージーロゴ
-	strcpy_s(ImageEasyRogo.path, IMAGE_EASY_ROGO_PATH);					//パスの設定
-	ImageEasyRogo.handle = LoadGraph(ImageEasyRogo.path);			//読み込み
-	if (ImageEasyRogo.handle == -1)
+	strcpy_s(ImageEasyRogo.image.path, IMAGE_EASY_ROGO_PATH);					//パスの設定
+	ImageEasyRogo.image.handle = LoadGraph(ImageEasyRogo.image.path);			//読み込み
+	if (ImageEasyRogo.image.handle == -1)
 	{
 		//エラーメッセージ表示
 		MessageBox(GetMainWindowHandle(), IMAGE_EASY_ROGO_PATH, IMAGE_LOAD_ERR_TITLE, MB_OK);
 		return FALSE;
 	}
-	GetGraphSize(ImageEasyRogo.handle, &ImageEasyRogo.width, &ImageEasyRogo.height);	//画像の幅と高さを取得
-	ImageEasyRogo.x = GAME_WIDTH / 2 - ImageEasyRogo.width - ImageEasyRogo.width / 2;   //中央寄せ-画像幅
-	ImageEasyRogo.y = GAME_HEIGHT / 2 + ImageEasyRogo.height;				            //中央寄せ+画像幅
+	GetGraphSize(ImageEasyRogo.image.handle, &ImageEasyRogo.image.width, &ImageEasyRogo.image.height);	//画像の幅と高さを取得
+	ImageEasyRogo.image.x = GAME_WIDTH / 2 - ImageEasyRogo.image.width - ImageEasyRogo.image.width / 2;   //中央寄せ-画像幅
+	ImageEasyRogo.image.y = GAME_HEIGHT / 2 + ImageEasyRogo.image.height*2;				            //中央寄せ+画像幅
+	ImageEasyRogo.rate = IMAGE_ROGO_ROTA;								//拡大率
+	ImageEasyRogo.rateMAX = IMAGE_ROGO_ROTA_MAX;		                //拡大率MAX
+
 
 	//ハードロゴ
-	strcpy_s(ImageHardRogo.path, IMAGE_HARD_ROGO_PATH);					//パスの設定
-	ImageHardRogo.handle = LoadGraph(ImageHardRogo.path);			//読み込み
-	if (ImageHardRogo.handle == -1)
+	strcpy_s(ImageHardRogo.image.path, IMAGE_HARD_ROGO_PATH);					//パスの設定
+	ImageHardRogo.image.handle = LoadGraph(ImageHardRogo.image.path);			//読み込み
+	if (ImageHardRogo.image.handle == -1)
 	{
 		//エラーメッセージ表示
 		MessageBox(GetMainWindowHandle(), IMAGE_HARD_ROGO_PATH, IMAGE_LOAD_ERR_TITLE, MB_OK);
 		return FALSE;
 	}
-	GetGraphSize(ImageHardRogo.handle, &ImageHardRogo.width, &ImageHardRogo.height);	//画像の幅と高さを取得
-	ImageHardRogo.x = GAME_WIDTH / 2 + ImageHardRogo.width / 2;		                    //中央寄せ
-	ImageHardRogo.y = GAME_HEIGHT / 2 + ImageHardRogo.height;				            //中央寄せ+画像幅
+	GetGraphSize(ImageHardRogo.image.handle, &ImageHardRogo.image.width, &ImageHardRogo.image.height);	//画像の幅と高さを取得
+	ImageHardRogo.image.x = GAME_WIDTH / 2 + ImageHardRogo.image.width;		                        //中央寄せ
+	ImageHardRogo.image.y = GAME_HEIGHT / 2 + ImageHardRogo.image.height*2;				            //中央寄せ+画像幅
+	ImageHardRogo.rate = IMAGE_ROGO_ROTA;								//拡大率
+	ImageHardRogo.rateMAX = IMAGE_ROGO_ROTA_MAX;		                //拡大率MAX
+
+	//問題１画像
+	strcpy_s(ImageQues[0].path, IMAGE_QUES_1_PATH);		//パスの設定
+	ImageQues[0].handle = LoadGraph(ImageQues[0].path);	//読み込み
+	if (ImageQues[0].handle == -1)
+	{
+		//エラーメッセージ表示
+		MessageBox(GetMainWindowHandle(), IMAGE_QUES_1_PATH, IMAGE_LOAD_ERR_TITLE, MB_OK);
+		return FALSE;
+	}
+	GetGraphSize(ImageQues[0].handle, &ImageQues[0].width, &ImageQues[0].height);	//画像の幅と高さを取得
+	ImageQues[0].x = GAME_WIDTH / 2 - ImageQues[0].width / 2;		//左右中央揃え
+	ImageQues[0].y = GAME_HEIGHT / 2 - ImageQues[0].height / 2;	    //上下中央揃え
+	ImageQues[0].IsDraw = FALSE;
 
 	return TRUE;
 }
@@ -818,6 +1016,9 @@ VOID MY_DELETE_IMAGE(VOID)
 {
 	DeleteGraph(ImageTitleBack.handle);
 	DeleteGraph(ImageTitleRogo.handle);
+	DeleteGraph(ImageEasyRogo.image.handle);
+	DeleteGraph(ImageHardRogo.image.handle);
+	DeleteGraph(ImageQues[1].handle);
 	return;
 }
 
