@@ -8,7 +8,7 @@
 #define GAME_COLOR			32	    //画面のカラービット
 
 #define GAME_WINDOW_BAR		0					//タイトルバーはデフォルトにする
-#define GAME_WINDOW_NAME	"GAME TITLE"		//ウィンドウのタイトル
+#define GAME_WINDOW_NAME	"狂病院からの脱出"  //ウィンドウのタイトル
 
 #define GAME_FPS			60	//FPSの数値	
 
@@ -37,12 +37,15 @@
 #define IMAGE_TITLE_BACK_PATH   TEXT(".\\IMAGE\\hospital_Aroom.jpg")
 #define IMAGE_TITLE_ROGO_PATH   TEXT(".\\IMAGE\\Title.png")
 #define IMAGE_EASY_ROGO_PATH    TEXT(".\\IMAGE\\Easy_logo.png")
-#define IMAGE_EASY_ROGO2_PATH    TEXT(".\\IMAGE\\Easy_logo2.png")
+#define IMAGE_EASY_ROGO2_PATH   TEXT(".\\IMAGE\\Easy_logo2.png")
 #define IMAGE_HARD_ROGO_PATH    TEXT(".\\IMAGE\\Hard_logo.png")
-#define IMAGE_HARD_ROGO2_PATH    TEXT(".\\IMAGE\\Hard_logo2.png")
+#define IMAGE_HARD_ROGO2_PATH   TEXT(".\\IMAGE\\Hard_logo2.png")
 #define IMAGE_RULE_PATH         TEXT(".\\IMAGE\\Rule.png")
 #define IMAGE_QUES_BACK_PATH    TEXT(".\\IMAGE\\")
 #define IMAGE_QUES_1_PATH       TEXT(".\\IMAGE\\Qusetion1.png")
+#define IMAGE_RIGHT_PATH        TEXT(".\\IMAGE\\Rule.png")
+#define IMAGE_WRONG_PATH        TEXT(".\\IMAGE\\Rule.png")
+#define IMAGE_END_BACK_PATH     TEXT(".\\IMAGE\\Horrer_Hospital.jpg")
 
 //画像関連
 #define IMAGE_ROGO_ROTA         1.0      //拡大率
@@ -52,7 +55,11 @@
 #define MUSIC_LOAD_ERR_TITLE	TEXT("音楽読み込みエラー")
 
 //音楽のパス
-#define MUSIC_TITLE_PATH        TEXT(".\\MUSIC\\衛星の夜.mp3")
+#define MUSIC_TITLE_PATH        TEXT(".\\MUSIC\\イビツ.mp3")
+#define MUSIC_RULE_PATH         TEXT(".\\MUSIC\\不安な果実.mp3")
+#define MUSIC_QUES_PATH         TEXT(".\\MUSIC\\不安な果実.mp3")
+#define MUSIC_STORY_PATH        TEXT(".\\MUSIC\\不気味な部屋.mp3")
+#define MUSIC_END_PATH          TEXT(".\\MUSIC\\コールドフィッシュ.mp3")
 
 //閉じるボタンを押したとき
 #define MSG_CLOSE_TITLE			TEXT("終了メッセージ")
@@ -153,7 +160,8 @@ int SampleNumFps = GAME_FPS;	//平均を取るサンプル数
 //キーボードの入力を取得
 char AllKeyState[KEY_CODE_KIND] = { '\0' };		//すべてのキーの状態が入る
 char OldAllKeyState[KEY_CODE_KIND] = { '\0' };	//すべてのキーの状態(直前)が入る
-char Answer[31];                                //答えの文字配列保存
+char Answer[51];                                //答えの文字配列保存
+char ANSER[5][40] = { "いんちょう","あ","い","う","え"};             //問題の答え
 
 //マウスの座標を取得
 MOUSE mouse;
@@ -166,15 +174,23 @@ IMAGE ImageTitleBack;          //タイトル背景画像
 IMAGE ImagePlayBack;           //プレイ背景画像
 IMAGE ImageTitleRogo;          //タイトルロゴ画像
 IMAGE ImageEasyRogo;           //イージーロゴ画像
-IMAGE ImageEasyRogo2;           //イージーロゴ画像
+IMAGE ImageEasyRogo2;          //イージーロゴ画像
 IMAGE ImageHardRogo;           //ハードロゴ画像
-IMAGE ImageHardRogo2;           //ハードロゴ画像
-IMAGE ImageRule;                //ルール説明画像
+IMAGE ImageHardRogo2;          //ハードロゴ画像
+IMAGE ImageRule;               //ルール説明画像
 IMAGE ImageQuesBack;           //問題画面背景画像
 IMAGE ImageQues[QUES_MAX];     //問題画像
+IMAGE ImageRight;              //正解
+IMAGE ImageWrong;              //不正解
+IMAGE ImageEndBack;            //エンド背景画像
 
 //音楽関連
-MUSIC BGM;			//ゲームのBGM
+MUSIC BGM_TITLE;			   //タイトルのBGM
+MUSIC BGM_RULE;			       //タイトルのBGM
+MUSIC BGM_QUES;			       //問題のBGM
+MUSIC BGM_STORY;			   //ストーリーのBGM
+MUSIC BGM_END;			       //エンドのBGM
+
 
 int QuesKind;					//問題の正誤状態
 
@@ -592,9 +608,9 @@ VOID MY_START_PROC(VOID)
 		if (MY_MOUSE_UP(MOUSE_INPUT_LEFT) == TRUE)
 		{
 			//BGMが流れているなら
-			if (CheckSoundMem(BGM.handle) != 0)
+			if (CheckSoundMem(BGM_TITLE.handle) != 0)
 			{
-				StopSoundMem(BGM.handle);	//BGMを止める
+				StopSoundMem(BGM_TITLE.handle);	//BGMを止める
 			}
 
 			//ゲームの終了状態を初期化する
@@ -607,7 +623,7 @@ VOID MY_START_PROC(VOID)
 		}
 
 	}
-	if (mouse.Point.x >= ImageHardRogo.x
+	else if (mouse.Point.x >= ImageHardRogo.x
 		&& mouse.Point.x <= ImageHardRogo.x + ImageHardRogo.width
 		&& mouse.Point.y >= ImageHardRogo.y
 		&& mouse.Point.y <= ImageHardRogo.y + ImageHardRogo.height)
@@ -615,9 +631,9 @@ VOID MY_START_PROC(VOID)
 		if (MY_MOUSE_UP(MOUSE_INPUT_LEFT) == TRUE)
 		{
 			//BGMが流れているなら
-			if (CheckSoundMem(BGM.handle) != 0)
+			if (CheckSoundMem(BGM_TITLE.handle) != 0)
 			{
-				StopSoundMem(BGM.handle);	//BGMを止める
+				StopSoundMem(BGM_TITLE.handle);	//BGMを止める
 			}
 
 			//ゲームの終了状態を初期化する
@@ -632,16 +648,16 @@ VOID MY_START_PROC(VOID)
 	}
 		
 	//BGMが流れていないなら
-	if (CheckSoundMem(BGM.handle) == 0)
+	if (CheckSoundMem(BGM_TITLE.handle) == 0)
 	{
 		//BGMの音量を下げる
-		ChangeVolumeSoundMem(255 * 50 / 100, BGM.handle);	//50%の音量にする
+		ChangeVolumeSoundMem(255 * 50 / 100, BGM_TITLE.handle);	//50%の音量にする
 
 		//BGMを流す
 		//DX_PLAYTYPE_NORMAL:　ノーマル再生
 		//DX_PLAYTYPE_BACK  : バックグラウンド再生
 		//DX_PLAYTYPE_LOOP  : ループ再生
-		PlaySoundMem(BGM.handle, DX_PLAYTYPE_LOOP);
+		PlaySoundMem(BGM_TITLE.handle, DX_PLAYTYPE_LOOP);
 	}
 
 	return;
@@ -701,9 +717,9 @@ VOID MY_PLAY_PROC(VOID)
 	if (MY_MOUSE_UP(MOUSE_INPUT_LEFT) == TRUE)
 	{
 		//BGMが流れているなら
-		if (CheckSoundMem(BGM.handle) != 0)
+		if (CheckSoundMem(BGM_RULE.handle) != 0)
 		{
-			StopSoundMem(BGM.handle);	//BGMを止める
+			StopSoundMem(BGM_RULE.handle);	//BGMを止める
 		}
 		//ゲームのシーンをプレイ画面にする
 		GameScene = GAME_SCENE_QUES;
@@ -712,16 +728,16 @@ VOID MY_PLAY_PROC(VOID)
 	}
 	
 	//BGMが流れていないなら
-	if (CheckSoundMem(BGM.handle) == 0)
+	if (CheckSoundMem(BGM_RULE.handle) == 0)
 	{
 		//BGMの音量を下げる
-		ChangeVolumeSoundMem(255 * 50 / 100, BGM.handle);	//50%の音量にする
+		ChangeVolumeSoundMem(255 * 50 / 100, BGM_RULE.handle);	//50%の音量にする
 
 		//BGMを流す
 		//DX_PLAYTYPE_NORMAL:　ノーマル再生
 		//DX_PLAYTYPE_BACK  : バックグラウンド再生
 		//DX_PLAYTYPE_LOOP  : ループ再生
-		PlaySoundMem(BGM.handle, DX_PLAYTYPE_LOOP);
+		PlaySoundMem(BGM_RULE.handle, DX_PLAYTYPE_LOOP);
 	}
 		
 
@@ -759,6 +775,12 @@ VOID MY_PLAY_QUES_PROC()
 	//Sキーを押したら、ストーリーシーンへ移動する
 	if (MY_KEY_DOWN(KEY_INPUT_S) == TRUE)
 	{
+		//BGMが流れているなら
+		if (CheckSoundMem(BGM_QUES.handle) != 0)
+		{
+			StopSoundMem(BGM_QUES.handle);	//BGMを止める
+		}
+
 		//ゲームのシーンをエンド画面にする
 		GameScene = GAME_SCENE_STORY;
 
@@ -767,6 +789,12 @@ VOID MY_PLAY_QUES_PROC()
 	//Rキーを押したら、ルート分岐シーンへ移動する
 	else if (MY_KEY_DOWN(KEY_INPUT_R) == TRUE)
 	{
+		//BGMが流れているなら
+		if (CheckSoundMem(BGM_QUES.handle) != 0)
+		{
+			StopSoundMem(BGM_QUES.handle);	//BGMを止める
+		}
+
 		//ゲームのシーンをエンド画面にする
 		GameScene = GAME_SCENE_ROOT;
 
@@ -775,6 +803,12 @@ VOID MY_PLAY_QUES_PROC()
 	//Tキーを押したら、タイトルシーンへ移動する
 	else if (MY_KEY_DOWN(KEY_INPUT_T) == TRUE)
 	{
+		//BGMが流れているなら
+		if (CheckSoundMem(BGM_QUES.handle) != 0)
+		{
+			StopSoundMem(BGM_QUES.handle);	//BGMを止める
+		}
+
 		//ゲームのシーンをエンド画面にする
 		GameScene = GAME_SCENE_START;
 
@@ -783,6 +817,12 @@ VOID MY_PLAY_QUES_PROC()
 	//スペースキーを押したら、エンドシーンへ移動する
 	else if (MY_KEY_DOWN(KEY_INPUT_SPACE) == TRUE)
 	{
+		//BGMが流れているなら
+		if (CheckSoundMem(BGM_QUES.handle) != 0)
+		{
+			StopSoundMem(BGM_QUES.handle);	//BGMを止める
+		}
+
 		//ゲームのシーンをエンド画面にする
 		GameScene = GAME_SCENE_END;
 
@@ -790,30 +830,54 @@ VOID MY_PLAY_QUES_PROC()
 	}
 
 	//BGMが流れていないなら
-	if (CheckSoundMem(BGM.handle) == 0)
+	if (CheckSoundMem(BGM_QUES.handle) == 0)
 	{
 		//BGMの音量を下げる
-		ChangeVolumeSoundMem(255 * 50 / 100, BGM.handle);	//50%の音量にする
+		ChangeVolumeSoundMem(255 * 50 / 100, BGM_QUES.handle);	//50%の音量にする
 
 		//BGMを流す
 		//DX_PLAYTYPE_NORMAL:　ノーマル再生
 		//DX_PLAYTYPE_BACK  : バックグラウンド再生
 		//DX_PLAYTYPE_LOOP  : ループ再生
-		PlaySoundMem(BGM.handle, DX_PLAYTYPE_LOOP);
+		PlaySoundMem(BGM_QUES.handle, DX_PLAYTYPE_LOOP);
 	}
 
 	if (MY_MOUSE_DOWN(MOUSE_INPUT_LEFT) == TRUE)
 	{
 		ImageQues[CountQues].IsDraw = TRUE;
-		/*if (QuesKind == QUES_END_RIGHT)
+		/*if(mouse.Point.x >= BOX_SIZE_X
+			&& mouse.Point.x <= BOX_SIZE_X + 600
+			&& mouse.Point.y >= BOX_SIZE_Y
+			&& mouse.Point.y <= BOX_SIZE_Y + 20)
+		if (QuesKind == QUES_END_RIGHT)
 		{
 			CountQues++;
-			QuesKind = QUES_END_WRONG;
+			
 		}
 		else if (QuesKind == QUES_END_WRONG)
 		{
 			CountQues++;
 		}*/
+		if (mouse.Point.x >= BOX_SIZE_X
+			&& mouse.Point.x <= BOX_SIZE_X + 600
+			&& mouse.Point.y >= BOX_SIZE_Y
+			&& mouse.Point.y <= BOX_SIZE_Y + 20)
+		{
+			if (MY_MOUSE_UP(MOUSE_INPUT_LEFT) == TRUE)
+			{
+				KeyInputString(BOX_SIZE_X, BOX_SIZE_Y,
+					50, &Answer[0],
+					FALSE);
+				if (MY_KEY_DOWN(KEY_INPUT_ESCAPE))
+				{
+					if (strcmp(ANSER[0], &Answer[0]) == 0)
+					{
+						DrawGraph(ImageRight.x, ImageRight.y, ImageRight.handle, TRUE);
+						GameScene = GAME_SCENE_STORY;
+					}
+				}
+			}
+		}
 	}
 
 
@@ -823,20 +887,13 @@ VOID MY_PLAY_QUES_PROC()
 
 VOID MY_PLAY_QUES_DRAW()
 {
+	
 	//問題を描画する
 	if (ImageQues[CountQues].IsDraw == TRUE)
 	{
 		DrawGraph(ImageQues[CountQues].x, ImageQues[CountQues].y, ImageQues[CountQues].handle, TRUE);
 		DrawBox(BOX_SIZE_X, BOX_SIZE_Y, BOX_SIZE_X+600, BOX_SIZE_Y+20, GetColor(255, 255, 255), TRUE);
-		if (mouse.Point.x >= BOX_SIZE_X
-			&& mouse.Point.x <= BOX_SIZE_X + 600
-			&& mouse.Point.y >= BOX_SIZE_Y
-			&& mouse.Point.y <= BOX_SIZE_Y + 20)
-		{
-			KeyInputString(BOX_SIZE_X, BOX_SIZE_Y,
-				30, &Answer[0],
-				TRUE);
-		}
+		
 	}
 	
 
@@ -862,6 +919,12 @@ VOID MY_PLAY_STORY_PROC()
 	//Pキーを押したら、プレイシーンへ移動する
 	if (MY_MOUSE_UP(MOUSE_INPUT_LEFT) == TRUE)
 	{
+		//BGMが流れているなら
+		if (CheckSoundMem(BGM_STORY.handle) != 0)
+		{
+			StopSoundMem(BGM_STORY.handle);	//BGMを止める
+		}
+
 		//ゲームのシーンをエンド画面にする
 		GameScene = GAME_SCENE_PLAY;
 
@@ -870,6 +933,12 @@ VOID MY_PLAY_STORY_PROC()
 	//Rキーを押したら、ルート分岐シーンへ移動する
 	if (MY_KEY_DOWN(KEY_INPUT_R) == TRUE)
 	{
+		//BGMが流れているなら
+		if (CheckSoundMem(BGM_STORY.handle) != 0)
+		{
+			StopSoundMem(BGM_STORY.handle);	//BGMを止める
+		}
+
 		//ゲームのシーンをエンド画面にする
 		GameScene = GAME_SCENE_ROOT;
 
@@ -878,6 +947,12 @@ VOID MY_PLAY_STORY_PROC()
 	//Qキーを押したら、問題シーンへ移動する
 	else if (MY_KEY_DOWN(KEY_INPUT_Q) == TRUE)
 	{
+		//BGMが流れているなら
+		if (CheckSoundMem(BGM_STORY.handle) != 0)
+		{
+			StopSoundMem(BGM_STORY.handle);	//BGMを止める
+		}
+
 		//ゲームのシーンを問題画面にする
 		GameScene = GAME_SCENE_QUES;
 
@@ -885,16 +960,16 @@ VOID MY_PLAY_STORY_PROC()
 	}
 
 	//BGMが流れていないなら
-	else if (CheckSoundMem(BGM.handle) == 0)
+	else if (CheckSoundMem(BGM_STORY.handle) == 0)
 	{
 		//BGMの音量を下げる
-		ChangeVolumeSoundMem(255 * 50 / 100, BGM.handle);	//50%の音量にする
+		ChangeVolumeSoundMem(255 * 50 / 100, BGM_STORY.handle);	//50%の音量にする
 
 		//BGMを流す
 		//DX_PLAYTYPE_NORMAL:　ノーマル再生
 		//DX_PLAYTYPE_BACK  : バックグラウンド再生
 		//DX_PLAYTYPE_LOOP  : ループ再生
-		PlaySoundMem(BGM.handle, DX_PLAYTYPE_LOOP);
+		PlaySoundMem(BGM_STORY.handle, DX_PLAYTYPE_LOOP);
 	}
 
 	return;
@@ -923,6 +998,12 @@ VOID MY_PLAY_ROOT_PROC()
 	//スペースキーを押したら、エンドシーンへ移動する
 	if (MY_KEY_DOWN(KEY_INPUT_SPACE) == TRUE)
 	{
+		//BGMが流れているなら
+		if (CheckSoundMem(BGM_STORY.handle) != 0)
+		{
+			StopSoundMem(BGM_STORY.handle);	//BGMを止める
+		}
+
 		//ゲームのシーンをエンド画面にする
 		GameScene = GAME_SCENE_END;
 
@@ -932,6 +1013,12 @@ VOID MY_PLAY_ROOT_PROC()
 	//Qキーを押したら、問題シーンへ移動する
 	else if (MY_KEY_DOWN(KEY_INPUT_Q) == TRUE)
 	{
+		//BGMが流れているなら
+		if (CheckSoundMem(BGM_STORY.handle) != 0)
+		{
+			StopSoundMem(BGM_STORY.handle);	//BGMを止める
+		}
+
 		//ゲームのシーンを問題画面にする
 		GameScene = GAME_SCENE_QUES;
 
@@ -939,16 +1026,17 @@ VOID MY_PLAY_ROOT_PROC()
 	}
 
 	//BGMが流れていないなら
-	if (CheckSoundMem(BGM.handle) == 0)
+	if (CheckSoundMem(BGM_STORY.handle) == 0)
 	{
+
 		//BGMの音量を下げる
-		ChangeVolumeSoundMem(255 * 50 / 100, BGM.handle);	//50%の音量にする
+		ChangeVolumeSoundMem(255 * 50 / 100, BGM_STORY.handle);	//50%の音量にする
 
 		//BGMを流す
 		//DX_PLAYTYPE_NORMAL:　ノーマル再生
 		//DX_PLAYTYPE_BACK  : バックグラウンド再生
 		//DX_PLAYTYPE_LOOP  : ループ再生
-		PlaySoundMem(BGM.handle, DX_PLAYTYPE_LOOP);
+		PlaySoundMem(BGM_STORY.handle, DX_PLAYTYPE_LOOP);
 	}
 
 	return;
@@ -985,6 +1073,8 @@ VOID MY_END_PROC(VOID)
 //エンド画面の描画
 VOID MY_END_DRAW(VOID)
 {
+	//背景を描画する
+	DrawGraph(ImageEndBack.x, ImageEndBack.y, ImageEndBack.handle, TRUE);
 
 	return;
 }
@@ -1072,7 +1162,7 @@ BOOL MY_LOAD_IMAGE(VOID)
 	ImageHardRogo2.y = GAME_HEIGHT / 2 + ImageHardRogo2.height * 2;				            //中央寄せ+画像幅
 
 
-	//タイトル背景画像
+	//ルール説明画像
 	strcpy_s(ImageRule.path, IMAGE_RULE_PATH);		//パスの設定
 	ImageRule.handle = LoadGraph(ImageRule.path);	//読み込み
 	if (ImageRule.handle == -1)
@@ -1099,6 +1189,48 @@ BOOL MY_LOAD_IMAGE(VOID)
 	ImageQues[0].y = GAME_HEIGHT / 2 - ImageQues[0].height / 2;	    //上下中央揃え
 	ImageQues[0].IsDraw = FALSE;
 
+	//正解画像
+	strcpy_s(ImageRight.path, IMAGE_RIGHT_PATH);		//パスの設定
+	ImageRight.handle = LoadGraph(ImageRight.path);	    //読み込み
+	if (ImageRight.handle == -1)
+	{
+		//エラーメッセージ表示
+		MessageBox(GetMainWindowHandle(), IMAGE_RIGHT_PATH, IMAGE_LOAD_ERR_TITLE, MB_OK);
+		return FALSE;
+	}
+	GetGraphSize(ImageRight.handle, &ImageRight.width, &ImageRight.height);	//画像の幅と高さを取得
+	ImageRight.x = GAME_WIDTH / 2 - ImageRight.width / 2;		//左右中央揃え
+	ImageRight.y = GAME_HEIGHT / 2 - ImageRight.height / 2;	    //上下中央揃え
+	ImageRight.IsDraw = FALSE;
+
+	//不正解画像
+	strcpy_s(ImageWrong.path, IMAGE_RIGHT_PATH);		//パスの設定
+	ImageWrong.handle = LoadGraph(ImageWrong.path);	    //読み込み
+	if (ImageWrong.handle == -1)
+	{
+		//エラーメッセージ表示
+		MessageBox(GetMainWindowHandle(), IMAGE_RIGHT_PATH, IMAGE_LOAD_ERR_TITLE, MB_OK);
+		return FALSE;
+	}
+	GetGraphSize(ImageWrong.handle, &ImageWrong.width, &ImageWrong.height);	//画像の幅と高さを取得
+	ImageWrong.x = GAME_WIDTH / 2 - ImageWrong.width / 2;		//左右中央揃え
+	ImageWrong.y = GAME_HEIGHT / 2 - ImageWrong.height / 2;	    //上下中央揃え
+	ImageWrong.IsDraw = FALSE;
+
+	//エンド背景画像
+	strcpy_s(ImageEndBack.path, IMAGE_END_BACK_PATH);		//パスの設定
+	ImageEndBack.handle = LoadGraph(ImageEndBack.path);	//読み込み
+	if (ImageEndBack.handle == -1)
+	{
+		//エラーメッセージ表示
+		MessageBox(GetMainWindowHandle(), IMAGE_END_BACK_PATH, IMAGE_LOAD_ERR_TITLE, MB_OK);
+		return FALSE;
+	}
+	GetGraphSize(ImageEndBack.handle, &ImageEndBack.width, &ImageEndBack.height);	//画像の幅と高さを取得
+	ImageEndBack.x = GAME_WIDTH / 2 - ImageEndBack.width / 2;		//左右中央揃え
+	ImageEndBack.y = GAME_HEIGHT / 2 - ImageEndBack.height / 2;	//上下中央揃え
+
+
 	return TRUE;
 }
 
@@ -1112,28 +1244,74 @@ VOID MY_DELETE_IMAGE(VOID)
 	DeleteGraph(ImageHardRogo.handle);
 	DeleteGraph(ImageRule.handle);
 	DeleteGraph(ImageQues[1].handle);
+	DeleteGraph(ImageRight.handle);
+	DeleteGraph(ImageWrong.handle);
+	DeleteGraph(ImageEndBack.handle);
 	return;
 }
 
 //音楽をまとめて読み込む関数
 BOOL MY_LOAD_MUSIC(VOID)
 {
-	//背景音楽
-	strcpy_s(BGM.path, MUSIC_TITLE_PATH);		//パスの設定
-	BGM.handle = LoadSoundMem(BGM.path);	//読み込み
-	if (BGM.handle == -1)
+	//タイトル背景音楽
+	strcpy_s(BGM_TITLE.path, MUSIC_TITLE_PATH);		//パスの設定
+	BGM_TITLE.handle = LoadSoundMem(BGM_TITLE.path);	//読み込み
+	if (BGM_TITLE.handle == -1)
 	{
 		//エラーメッセージ表示
 		MessageBox(GetMainWindowHandle(), MUSIC_TITLE_PATH, MUSIC_LOAD_ERR_TITLE, MB_OK);
 		return FALSE;
 	}
 
+	//ルール説明背景音楽
+	strcpy_s(BGM_RULE.path, MUSIC_RULE_PATH);		//パスの設定
+	BGM_RULE.handle = LoadSoundMem(BGM_RULE.path);	//読み込み
+	if (BGM_RULE.handle == -1)
+	{
+		//エラーメッセージ表示
+		MessageBox(GetMainWindowHandle(), MUSIC_RULE_PATH, MUSIC_LOAD_ERR_TITLE, MB_OK);
+		return FALSE;
+	}
+
+	//問題背景音楽
+	strcpy_s(BGM_QUES.path, MUSIC_QUES_PATH);		//パスの設定
+	BGM_QUES.handle = LoadSoundMem(BGM_QUES.path);	//読み込み
+	if (BGM_QUES.handle == -1)
+	{
+		//エラーメッセージ表示
+		MessageBox(GetMainWindowHandle(), MUSIC_QUES_PATH, MUSIC_LOAD_ERR_TITLE, MB_OK);
+		return FALSE;
+	}
+
+	//ストーリー背景音楽
+	strcpy_s(BGM_STORY.path, MUSIC_STORY_PATH);		//パスの設定
+	BGM_STORY.handle = LoadSoundMem(BGM_STORY.path);	//読み込み
+	if (BGM_STORY.handle == -1)
+	{
+		//エラーメッセージ表示
+		MessageBox(GetMainWindowHandle(), MUSIC_STORY_PATH, MUSIC_LOAD_ERR_TITLE, MB_OK);
+		return FALSE;
+	}
+
+	//エンド背景音楽
+	strcpy_s(BGM_END.path, MUSIC_END_PATH);		//パスの設定
+	BGM_END.handle = LoadSoundMem(BGM_END.path);	//読み込み
+	if (BGM_END.handle == -1)
+	{
+		//エラーメッセージ表示
+		MessageBox(GetMainWindowHandle(), MUSIC_END_PATH, MUSIC_LOAD_ERR_TITLE, MB_OK);
+		return FALSE;
+	}
 	return TRUE;
 }
 
 //音楽をまとめて削除する関数
 VOID MY_DELETE_MUSIC(VOID)
 {
-	DeleteSoundMem(BGM.handle);
+	DeleteSoundMem(BGM_TITLE.handle);
+	DeleteSoundMem(BGM_RULE.handle);
+	DeleteSoundMem(BGM_QUES.handle);
+	DeleteSoundMem(BGM_STORY.handle);
+	DeleteSoundMem(BGM_END.handle);
 	return;
 }
