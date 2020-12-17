@@ -34,18 +34,21 @@
 #define IMAGE_LOAD_ERR_TITLE	TEXT("画像読み込みエラー")
 
 //画像のパス
-#define IMAGE_TITLE_BACK_PATH   TEXT(".\\IMAGE\\hospital_Aroom.jpg")
-#define IMAGE_TITLE_ROGO_PATH   TEXT(".\\IMAGE\\Title.png")
-#define IMAGE_EASY_ROGO_PATH    TEXT(".\\IMAGE\\Easy_logo.png")
-#define IMAGE_EASY_ROGO2_PATH   TEXT(".\\IMAGE\\Easy_logo2.png")
-#define IMAGE_HARD_ROGO_PATH    TEXT(".\\IMAGE\\Hard_logo.png")
-#define IMAGE_HARD_ROGO2_PATH   TEXT(".\\IMAGE\\Hard_logo2.png")
-#define IMAGE_RULE_PATH         TEXT(".\\IMAGE\\Rule.png")
-#define IMAGE_QUES_BACK_PATH    TEXT(".\\IMAGE\\")
-#define IMAGE_QUES_1_PATH       TEXT(".\\IMAGE\\Qusetion1.png")
-#define IMAGE_RIGHT_PATH        TEXT(".\\IMAGE\\Rule.png")
-#define IMAGE_WRONG_PATH        TEXT(".\\IMAGE\\Rule.png")
-#define IMAGE_END_BACK_PATH     TEXT(".\\IMAGE\\Horrer_Hospital.jpg")
+#define IMAGE_TITLE_BACK_PATH   TEXT(".\\IMAGE\\Title_bg.jpg")               //タイトル背景
+#define IMAGE_TITLE_ROGO_PATH   TEXT(".\\IMAGE\\Title2.png")                 //タイトルロゴ
+#define IMAGE_EASY_ROGO_PATH    TEXT(".\\IMAGE\\Easy_logo.png")              //イージーロゴ
+#define IMAGE_EASY_ROGO2_PATH   TEXT(".\\IMAGE\\Easy_logo2.png")             //イージーロゴ（画像上）
+#define IMAGE_HARD_ROGO_PATH    TEXT(".\\IMAGE\\Hard_logo.png")              //ハードロゴ
+#define IMAGE_HARD_ROGO2_PATH   TEXT(".\\IMAGE\\Hard_logo2.png")             //ハードロゴ（画像上）
+#define IMAGE_PLAY_BACK_PATH    TEXT(".\\IMAGE\\Play_bg.jpg")                //プレイ背景
+#define IMAGE_RULE_PATH         TEXT(".\\IMAGE\\Rule.png")                   //ルール説明画面背景
+#define IMAGE_QUES_BACK_PATH    TEXT(".\\IMAGE\\Play_bg.jpg")                //問題背景
+#define IMAGE_QUES_1_PATH       TEXT(".\\IMAGE\\Qusetion1.png")              //問題１画像
+#define IMAGE_QUES_2_PATH       TEXT(".\\IMAGE\\Qusetion2.png")              //問題２画像
+#define IMAGE_RIGHT_PATH        TEXT(".\\IMAGE\\Rule.png")                   //正解画像
+#define IMAGE_WRONG_PATH        TEXT(".\\IMAGE\\Rule.png")                   //不正解画像
+#define IMAGE_STORY_BACK_PATH   TEXT(".\\IMAGE\\Title_bg.jpg")               //ストーリー背景
+#define IMAGE_END_BACK_PATH     TEXT(".\\IMAGE\\Horrer_Hospital.jpg")        //エンド背景
 
 //画像関連
 #define IMAGE_ROGO_ROTA         1.0      //拡大率
@@ -66,16 +69,20 @@
 #define MSG_CLOSE_CAPTION		TEXT("ゲームを終了しますか？")
 
 //問題数
-#define QUES_MAX                5
+#define QUES_MAX                2
 
 //入力タブサイズ
-#define BOX_SIZE_X             GAME_WIDTH / 2 - 300
+#define BOX_SIZE_X             GAME_WIDTH / 2 - 250
 #define BOX_SIZE_Y             GAME_HEIGHT - 120
+
+//院長との距離カウント
+#define COUNTDIST              2
 
 enum GAME_SCENE {
 	GAME_SCENE_START,
-	GAME_SCENE_PLAY,
-	GAME_SCENE_QUES,
+	GAME_SCENE_RULE,
+	GAME_SCENE_QUES_EASY,
+	GAME_SCENE_QUES_HARD,
 	GAME_SCENE_ROOT,
 	GAME_SCENE_STORY,
 	GAME_SCENE_END,
@@ -171,7 +178,7 @@ int GameScene;		//ゲームシーンを管理
 
 //背景関連
 IMAGE ImageTitleBack;          //タイトル背景画像
-IMAGE ImagePlayBack;           //プレイ背景画像
+IMAGE ImagePlayBack;           //ルール背景画像
 IMAGE ImageTitleRogo;          //タイトルロゴ画像
 IMAGE ImageEasyRogo;           //イージーロゴ画像
 IMAGE ImageEasyRogo2;          //イージーロゴ画像
@@ -182,6 +189,7 @@ IMAGE ImageQuesBack;           //問題画面背景画像
 IMAGE ImageQues[QUES_MAX];     //問題画像
 IMAGE ImageRight;              //正解
 IMAGE ImageWrong;              //不正解
+IMAGE ImageStoryBack;          //ストーリー画面背景画像
 IMAGE ImageEndBack;            //エンド背景画像
 
 //音楽関連
@@ -193,9 +201,12 @@ MUSIC BGM_END;			       //エンドのBGM
 
 
 int QuesKind;					//問題の正誤状態
+int CountRight;                 //正解数
+int CountWrong;                 //不正解数
 
-//問題数カウント
-int CountQues;
+int CountQues;              //問題数カウント
+
+
 
 
 //########## プロトタイプ宣言 ##########
@@ -222,14 +233,19 @@ VOID MY_START(VOID);		//スタート画面
 VOID MY_START_PROC(VOID);	//スタート画面の処理
 VOID MY_START_DRAW(VOID);	//スタート画面の描画
 
-VOID MY_PLAY_INIT(VOID);	//プレイ画面初期化
-VOID MY_PLAY(VOID);			//プレイ画面
-VOID MY_PLAY_PROC(VOID);	//プレイ画面の処理
-VOID MY_PLAY_DRAW(VOID);	//プレイ画面の描画
+VOID MY_PLAY_INIT(VOID);	    //プレイ画面初期化
+VOID MY_PLAY_RULE(VOID);	    //ルール説明画面
+VOID MY_PLAY_RULE_PROC(VOID);	//ルール説明画面の処理
+VOID MY_PLAY_RULE_DRAW(VOID);	//ルール説明画面の描画
 
-VOID MY_PLAY_QUES(VOID);       //問題画面
-VOID MY_PLAY_QUES_PROC(VOID);  //問題画面の処理
-VOID MY_PLAY_QUES_DRAW(VOID);  //問題画面の描画
+VOID MY_PLAY_QUES_EASY(VOID);       //イージー問題画面
+VOID MY_PLAY_QUES_EASY_PROC(VOID);  //問題画面の処理
+VOID MY_PLAY_QUES_EASY_DRAW(VOID);  //問題画面の描画
+
+VOID MY_PLAY_QUES_HARD(VOID);       //ハード問題画面
+VOID MY_PLAY_QUES_HARD_PROC(VOID);  //問題画面の処理
+VOID MY_PLAY_QUES_HARD_DRAW(VOID);  //問題画面の描画
+
 
 VOID MY_PLAY_STORY(VOID);       //ストーリー画面
 VOID MY_PLAY_STORY_PROC(VOID);  //ストーリー画面の処理
@@ -303,11 +319,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		case GAME_SCENE_START:
 			MY_START();	//スタート画面
 			break;
-		case GAME_SCENE_PLAY:
-			MY_PLAY();	//プレイ画面
+		case GAME_SCENE_RULE:
+			MY_PLAY_RULE();	//ルール説明画面
 			break;
-		case GAME_SCENE_QUES:
-			MY_PLAY_QUES();	//問題画面
+		case GAME_SCENE_QUES_EASY:
+			MY_PLAY_QUES_EASY();	//イージー問題画面
+			break;
+		case GAME_SCENE_QUES_HARD:
+			MY_PLAY_QUES_HARD();	//ハード問題画面
 			break;
 		case GAME_SCENE_STORY:
 			MY_PLAY_STORY();	//ストーリー画面
@@ -693,25 +712,19 @@ VOID MY_START_DRAW(VOID)
 	return;
 }
 
-//プレイ画面初期化
-VOID MY_PLAY_INIT(VOID)
-{
-	
-	return;
-}
-
 //プレイ画面
-VOID MY_PLAY(VOID)
+VOID MY_PLAY_RULE(VOID)
 {
-	MY_PLAY_PROC();	//プレイ画面の処理
-	MY_PLAY_DRAW();	//プレイ画面の描画
+	MY_PLAY_RULE_PROC();	//プレイ画面の処理
+	MY_PLAY_RULE_DRAW();	//プレイ画面の描画
 
+	DrawString(0, 0, "ルール説明画面", GetColor(255, 255, 255));
 	DrawString(0, 40, "プレイ画面(クリックで問題へ)", GetColor(255, 255, 255));
 	return;
 }
 
 //プレイ画面の処理
-VOID MY_PLAY_PROC(VOID)
+VOID MY_PLAY_RULE_PROC(VOID)
 {
 	//クリックすると問題画面へ
 	if (MY_MOUSE_UP(MOUSE_INPUT_LEFT) == TRUE)
@@ -722,7 +735,7 @@ VOID MY_PLAY_PROC(VOID)
 			StopSoundMem(BGM_RULE.handle);	//BGMを止める
 		}
 		//ゲームのシーンをプレイ画面にする
-		GameScene = GAME_SCENE_QUES;
+		GameScene = GAME_SCENE_QUES_EASY;
 
 		return;
 	}
@@ -746,7 +759,7 @@ VOID MY_PLAY_PROC(VOID)
 }
 
 //プレイ画面の描画
-VOID MY_PLAY_DRAW(VOID)
+VOID MY_PLAY_RULE_DRAW(VOID)
 {
 	//背景を描画する
 	DrawGraph(ImagePlayBack.x, ImagePlayBack.y, ImagePlayBack.handle, TRUE);
@@ -757,21 +770,20 @@ VOID MY_PLAY_DRAW(VOID)
 }
 
 //問題画面
-VOID MY_PLAY_QUES()
+VOID MY_PLAY_QUES_EASY()
 {
-	MY_PLAY_QUES_PROC();
-	MY_PLAY_QUES_DRAW();
+	MY_PLAY_QUES_EASY_PROC();
+	MY_PLAY_QUES_EASY_DRAW();
 
-	DrawString(0, 0, "プレイ画面(スペースキーでエンドへ)", GetColor(255, 255, 255));
+	DrawString(0, 0, "問題画面", GetColor(255, 255, 255));
 	DrawString(0, 20, "プレイ画面(Sキーでストーリーへ)", GetColor(255, 255, 255));
 	DrawString(0, 40, "プレイ画面(Tキーでタイトルへ)", GetColor(255, 255, 255));
-	DrawString(0, 60, "プレイ画面(Rキーでルート分岐へ)", GetColor(255, 255, 255));
-
 	return;
 }
 
-VOID MY_PLAY_QUES_PROC()
+VOID MY_PLAY_QUES_EASY_PROC()
 {
+	QuesKind = QUES_END_WRONG;
 	//Sキーを押したら、ストーリーシーンへ移動する
 	if (MY_KEY_DOWN(KEY_INPUT_S) == TRUE)
 	{
@@ -783,20 +795,6 @@ VOID MY_PLAY_QUES_PROC()
 
 		//ゲームのシーンをエンド画面にする
 		GameScene = GAME_SCENE_STORY;
-
-		return;
-	}
-	//Rキーを押したら、ルート分岐シーンへ移動する
-	else if (MY_KEY_DOWN(KEY_INPUT_R) == TRUE)
-	{
-		//BGMが流れているなら
-		if (CheckSoundMem(BGM_QUES.handle) != 0)
-		{
-			StopSoundMem(BGM_QUES.handle);	//BGMを止める
-		}
-
-		//ゲームのシーンをエンド画面にする
-		GameScene = GAME_SCENE_ROOT;
 
 		return;
 	}
@@ -814,21 +812,7 @@ VOID MY_PLAY_QUES_PROC()
 
 		return;
 	}
-	//スペースキーを押したら、エンドシーンへ移動する
-	else if (MY_KEY_DOWN(KEY_INPUT_SPACE) == TRUE)
-	{
-		//BGMが流れているなら
-		if (CheckSoundMem(BGM_QUES.handle) != 0)
-		{
-			StopSoundMem(BGM_QUES.handle);	//BGMを止める
-		}
-
-		//ゲームのシーンをエンド画面にする
-		GameScene = GAME_SCENE_END;
-
-		return;
-	}
-
+	
 	//BGMが流れていないなら
 	if (CheckSoundMem(BGM_QUES.handle) == 0)
 	{
@@ -842,57 +826,93 @@ VOID MY_PLAY_QUES_PROC()
 		PlaySoundMem(BGM_QUES.handle, DX_PLAYTYPE_LOOP);
 	}
 
-	if (MY_MOUSE_DOWN(MOUSE_INPUT_LEFT) == TRUE)
+	if (MY_MOUSE_UP(MOUSE_INPUT_LEFT) == TRUE)
 	{
 		ImageQues[CountQues].IsDraw = TRUE;
-		/*if(mouse.Point.x >= BOX_SIZE_X
-			&& mouse.Point.x <= BOX_SIZE_X + 600
-			&& mouse.Point.y >= BOX_SIZE_Y
-			&& mouse.Point.y <= BOX_SIZE_Y + 20)
-		if (QuesKind == QUES_END_RIGHT)
-		{
-			CountQues++;
-			
-		}
-		else if (QuesKind == QUES_END_WRONG)
-		{
-			CountQues++;
-		}*/
-		if (mouse.Point.x >= BOX_SIZE_X
-			&& mouse.Point.x <= BOX_SIZE_X + 600
-			&& mouse.Point.y >= BOX_SIZE_Y
-			&& mouse.Point.y <= BOX_SIZE_Y + 20)
-		{
-			if (MY_MOUSE_UP(MOUSE_INPUT_LEFT) == TRUE)
-			{
-				KeyInputString(BOX_SIZE_X, BOX_SIZE_Y,
-					50, &Answer[0],
-					FALSE);
-				if (MY_KEY_DOWN(KEY_INPUT_ESCAPE))
-				{
-					if (strcmp(ANSER[0], &Answer[0]) == 0)
-					{
-						DrawGraph(ImageRight.x, ImageRight.y, ImageRight.handle, TRUE);
-						GameScene = GAME_SCENE_STORY;
-					}
-				}
-			}
-		}
 	}
 
+	if(ImageQues[CountQues].IsDraw)
+	{
+		if (mouse.Point.x >= BOX_SIZE_X
+			&& mouse.Point.x <= BOX_SIZE_X + 100
+			&& mouse.Point.y >= BOX_SIZE_Y
+			&& mouse.Point.y <= BOX_SIZE_Y + 20)
+		{
+			DrawString(BOX_SIZE_X + 46, BOX_SIZE_Y + 2, "A", GetColor(0, 0, 0));
+			if (MY_MOUSE_UP(MOUSE_INPUT_LEFT) == TRUE)
+			{
+				QuesKind = QUES_END_WRONG;
+				DrawGraph(ImageWrong.x, ImageWrong.y, ImageWrong.handle, TRUE);
+				ImageQues[CountQues].IsDraw = FALSE;
+				CountWrong++;
+				CountQues++;
+			}
+		}
+		else if (mouse.Point.x >= BOX_SIZE_X
+			&& mouse.Point.x <= BOX_SIZE_X + 300
+			&& mouse.Point.y >= BOX_SIZE_Y
+			&& mouse.Point.y <= BOX_SIZE_Y + 20)
+		{
+			DrawString(BOX_SIZE_X + 246, BOX_SIZE_Y + 2, "B", GetColor(0, 0, 0));
+			if (MY_MOUSE_UP(MOUSE_INPUT_LEFT) == TRUE)
+			{
+				QuesKind = QUES_END_RIGHT;
+				DrawGraph(ImageRight.x, ImageRight.y, ImageRight.handle, TRUE);
+				ImageQues[CountQues].IsDraw = FALSE;
+				CountRight++;
+				CountQues++;
+			}
+		}
+		else if (mouse.Point.x >= BOX_SIZE_X
+			&& mouse.Point.x <= BOX_SIZE_X + 500
+			&& mouse.Point.y >= BOX_SIZE_Y
+			&& mouse.Point.y <= BOX_SIZE_Y + 20)
+		{
+			DrawString(BOX_SIZE_X + 446, BOX_SIZE_Y + 2, "C", GetColor(0, 0, 0));
+			if (MY_MOUSE_UP(MOUSE_INPUT_LEFT) == TRUE)
+			{
+				QuesKind = QUES_END_WRONG;
+				DrawGraph(ImageWrong.x, ImageWrong.y, ImageWrong.handle, TRUE);
+				ImageQues[CountQues].IsDraw = FALSE;
+				CountWrong++;
+				CountQues++;
+			}
+		}
+
+		if (CountRight == 1)
+		{
+			GameScene = GAME_SCENE_END;
+		}
+		if (COUNTDIST - CountWrong == 0)
+		{
+			GameScene= GAME_SCENE_END;
+		}
+	}
+	
 
 
 	return;
 }
 
-VOID MY_PLAY_QUES_DRAW()
+VOID MY_PLAY_QUES_EASY_DRAW()
 {
-	
+	//背景を描画する
+	DrawGraph(ImageQuesBack.x, ImageQuesBack.y, ImageQuesBack.handle, TRUE);
+	//院長との距離描画
+	DrawFormatString(1100, 20, GetColor(255, 0, 0), "院長との距離 %d", COUNTDIST - CountWrong);
+
 	//問題を描画する
 	if (ImageQues[CountQues].IsDraw == TRUE)
 	{
 		DrawGraph(ImageQues[CountQues].x, ImageQues[CountQues].y, ImageQues[CountQues].handle, TRUE);
-		DrawBox(BOX_SIZE_X, BOX_SIZE_Y, BOX_SIZE_X+600, BOX_SIZE_Y+20, GetColor(255, 255, 255), TRUE);
+		DrawBox(BOX_SIZE_X, BOX_SIZE_Y, BOX_SIZE_X+100, BOX_SIZE_Y+20, GetColor(255, 0, 0), TRUE);
+		DrawString(BOX_SIZE_X + 46, BOX_SIZE_Y+2, "A", GetColor(255, 255, 255));
+
+		DrawBox(BOX_SIZE_X+200, BOX_SIZE_Y, BOX_SIZE_X + 300, BOX_SIZE_Y + 20, GetColor(0, 255, 0), TRUE);
+		DrawString(BOX_SIZE_X + 246, BOX_SIZE_Y+2, "B", GetColor(255, 255, 255));
+
+		DrawBox(BOX_SIZE_X+400, BOX_SIZE_Y, BOX_SIZE_X + 500, BOX_SIZE_Y + 20, GetColor(0, 0, 255), TRUE);
+		DrawString(BOX_SIZE_X + 446, BOX_SIZE_Y+2 , "C", GetColor(255, 255, 255));
 		
 	}
 	
@@ -901,12 +921,15 @@ VOID MY_PLAY_QUES_DRAW()
 	return;
 }
 
+
+
 //ストーリー画面
 VOID MY_PLAY_STORY()
 {
 	MY_PLAY_STORY_PROC();
 	MY_PLAY_STORY_DRAW();
 
+	DrawString(0, 0, "ストーリー画面", GetColor(255, 255, 255));
 	DrawString(0, 20, "プレイ画面(Qキーで問題へ)", GetColor(255, 255, 255));
 	DrawString(0, 40, "プレイ画面(Rキーでルート分岐へ)", GetColor(255, 255, 255));
 
@@ -925,8 +948,8 @@ VOID MY_PLAY_STORY_PROC()
 			StopSoundMem(BGM_STORY.handle);	//BGMを止める
 		}
 
-		//ゲームのシーンをエンド画面にする
-		GameScene = GAME_SCENE_PLAY;
+		//ゲームのシーンをルール説明画面にする
+		GameScene = GAME_SCENE_RULE;
 
 		return;
 	}
@@ -939,7 +962,7 @@ VOID MY_PLAY_STORY_PROC()
 			StopSoundMem(BGM_STORY.handle);	//BGMを止める
 		}
 
-		//ゲームのシーンをエンド画面にする
+		//ゲームのシーンをルート分岐画面にする
 		GameScene = GAME_SCENE_ROOT;
 
 		return;
@@ -954,7 +977,7 @@ VOID MY_PLAY_STORY_PROC()
 		}
 
 		//ゲームのシーンを問題画面にする
-		GameScene = GAME_SCENE_QUES;
+		GameScene = GAME_SCENE_QUES_EASY;
 
 		return;
 	}
@@ -977,7 +1000,9 @@ VOID MY_PLAY_STORY_PROC()
 
 VOID MY_PLAY_STORY_DRAW()
 {
-	
+	//背景を描画する
+	DrawGraph(ImageStoryBack.x, ImageStoryBack.y, ImageStoryBack.handle, TRUE);
+
 	return;
 }
 
@@ -987,31 +1012,16 @@ VOID MY_PLAY_ROOT()
 	MY_PLAY_ROOT_PROC();
 	MY_PLAY_ROOT_DRAW();
 
-	DrawString(0, 0, "プレイ画面(スペースキーでエンドへ)", GetColor(255, 255, 255));
-	DrawString(0, 20, "プレイ画面(Qキーで問題へ)", GetColor(255, 255, 255));
-
+	DrawString(0, 0, "プレイ画面(Qキーで問題へ)", GetColor(255, 255, 255));
+	
 	return;
 }
 
 VOID MY_PLAY_ROOT_PROC()
 {
-	//スペースキーを押したら、エンドシーンへ移動する
-	if (MY_KEY_DOWN(KEY_INPUT_SPACE) == TRUE)
-	{
-		//BGMが流れているなら
-		if (CheckSoundMem(BGM_STORY.handle) != 0)
-		{
-			StopSoundMem(BGM_STORY.handle);	//BGMを止める
-		}
-
-		//ゲームのシーンをエンド画面にする
-		GameScene = GAME_SCENE_END;
-
-		return;
-	}
-
+	
 	//Qキーを押したら、問題シーンへ移動する
-	else if (MY_KEY_DOWN(KEY_INPUT_Q) == TRUE)
+	if (MY_KEY_DOWN(KEY_INPUT_Q) == TRUE)
 	{
 		//BGMが流れているなら
 		if (CheckSoundMem(BGM_STORY.handle) != 0)
@@ -1020,7 +1030,7 @@ VOID MY_PLAY_ROOT_PROC()
 		}
 
 		//ゲームのシーンを問題画面にする
-		GameScene = GAME_SCENE_QUES;
+		GameScene = GAME_SCENE_QUES_EASY;
 
 		return;
 	}
@@ -1063,7 +1073,17 @@ VOID MY_END_PROC(VOID)
 	//エスケープキーを押したら、スタートシーンへ移動する
 	if (MY_KEY_DOWN(KEY_INPUT_ESCAPE) == TRUE)
 	{
+		//BGMが流れているなら
+		if (CheckSoundMem(BGM_END.handle) != 0)
+		{
+			StopSoundMem(BGM_END.handle);	//BGMを止める
+		}
+
+		QuesKind = QUES_END_WRONG;
+		CountWrong = 0;
 		GameScene = GAME_SCENE_START;
+
+		return;
 	}
 
 	DrawString(0, 0, "エンド画面(エスケープキーを押して下さい)", GetColor(255, 255, 255));
@@ -1078,6 +1098,107 @@ VOID MY_END_DRAW(VOID)
 
 	return;
 }
+
+//ハード問題画面
+VOID MY_PLAY_QUES_HARD()
+{
+	MY_PLAY_QUES_HARD_PROC();
+	MY_PLAY_QUES_HARD_DRAW();
+
+	DrawString(0, 0, "ハード問題画面", GetColor(255, 255, 255));
+	DrawString(0, 20, "プレイ画面(Sキーでストーリーへ)", GetColor(255, 255, 255));
+	DrawString(0, 40, "プレイ画面(Tキーでタイトルへ)", GetColor(255, 255, 255));
+	return;
+}
+
+VOID MY_PLAY_QUES_HARD_PROC()
+{
+	//Sキーを押したら、ストーリーシーンへ移動する
+	if (MY_KEY_DOWN(KEY_INPUT_S) == TRUE)
+	{
+		//BGMが流れているなら
+		if (CheckSoundMem(BGM_QUES.handle) != 0)
+		{
+			StopSoundMem(BGM_QUES.handle);	//BGMを止める
+		}
+
+		//ゲームのシーンをエンド画面にする
+		GameScene = GAME_SCENE_STORY;
+
+		return;
+	}
+	//Tキーを押したら、タイトルシーンへ移動する
+	else if (MY_KEY_DOWN(KEY_INPUT_T) == TRUE)
+	{
+		//BGMが流れているなら
+		if (CheckSoundMem(BGM_QUES.handle) != 0)
+		{
+			StopSoundMem(BGM_QUES.handle);	//BGMを止める
+		}
+
+		//ゲームのシーンをエンド画面にする
+		GameScene = GAME_SCENE_START;
+
+		return;
+	}
+
+	//BGMが流れていないなら
+	if (CheckSoundMem(BGM_QUES.handle) == 0)
+	{
+		//BGMの音量を下げる
+		ChangeVolumeSoundMem(255 * 50 / 100, BGM_QUES.handle);	//50%の音量にする
+
+		//BGMを流す
+		//DX_PLAYTYPE_NORMAL:　ノーマル再生
+		//DX_PLAYTYPE_BACK  : バックグラウンド再生
+		//DX_PLAYTYPE_LOOP  : ループ再生
+		PlaySoundMem(BGM_QUES.handle, DX_PLAYTYPE_LOOP);
+	}
+
+	if (MY_MOUSE_UP(MOUSE_INPUT_LEFT) == TRUE)
+	{
+		ImageQues[CountQues].IsDraw = TRUE;
+
+		CountQues++;
+
+	}
+
+
+
+	return;
+}
+
+VOID MY_PLAY_QUES_HARD_DRAW()
+{
+	//背景を描画する
+	DrawGraph(ImageQuesBack.x, ImageQuesBack.y, ImageQuesBack.handle, TRUE);
+	//院長との距離描画
+	DrawFormatString(1100, 20, GetColor(255, 0, 0), "院長との距離 %d", COUNTDIST - CountWrong);
+
+	//問題を描画する
+	if (ImageQues[CountQues].IsDraw == TRUE)
+	{
+		DrawGraph(ImageQues[CountQues].x, ImageQues[CountQues].y, ImageQues[CountQues].handle, TRUE);
+		DrawBox(BOX_SIZE_X, BOX_SIZE_Y, BOX_SIZE_X + 600, BOX_SIZE_Y + 20, GetColor(255, 255, 255), TRUE);
+		if (mouse.Point.x >= BOX_SIZE_X
+			&& mouse.Point.x <= BOX_SIZE_X + 600
+			&& mouse.Point.y >= BOX_SIZE_Y
+			&& mouse.Point.y <= BOX_SIZE_Y + 20)
+		{
+			if (MY_MOUSE_UP(MOUSE_INPUT_LEFT) == TRUE)
+			{
+				KeyInputString(BOX_SIZE_X, BOX_SIZE_Y,
+					50, Answer,
+					FALSE);
+			}
+		}
+	}
+
+
+
+	return;
+}
+
 
 //画像をまとめて読み込む関数
 BOOL MY_LOAD_IMAGE(VOID)
@@ -1161,6 +1282,19 @@ BOOL MY_LOAD_IMAGE(VOID)
 	ImageHardRogo2.x = GAME_WIDTH / 2 + ImageHardRogo2.width / 2;	                        //中央寄せ+画像幅
 	ImageHardRogo2.y = GAME_HEIGHT / 2 + ImageHardRogo2.height * 2;				            //中央寄せ+画像幅
 
+	//ルール背景画像
+	strcpy_s(ImagePlayBack.path, IMAGE_PLAY_BACK_PATH);		//パスの設定
+	ImagePlayBack.handle = LoadGraph(ImagePlayBack.path);	//読み込み
+	if (ImagePlayBack.handle == -1)
+	{
+		//エラーメッセージ表示
+		MessageBox(GetMainWindowHandle(), IMAGE_PLAY_BACK_PATH, IMAGE_LOAD_ERR_TITLE, MB_OK);
+		return FALSE;
+	}
+	GetGraphSize(ImagePlayBack.handle, &ImagePlayBack.width, &ImagePlayBack.height);	//画像の幅と高さを取得
+	ImagePlayBack.x = GAME_WIDTH / 2 - ImagePlayBack.width / 2;		//左右中央揃え
+	ImagePlayBack.y = GAME_HEIGHT / 2 - ImagePlayBack.height / 2;	//上下中央揃え
+
 
 	//ルール説明画像
 	strcpy_s(ImageRule.path, IMAGE_RULE_PATH);		//パスの設定
@@ -1175,6 +1309,19 @@ BOOL MY_LOAD_IMAGE(VOID)
 	ImageRule.x = GAME_WIDTH / 2 - ImageRule.width / 2;		//左右中央揃え
 	ImageRule.y = GAME_HEIGHT / 2 - ImageRule.height / 2;	//上下中央揃え
 
+	//問題背景画像
+	strcpy_s(ImageQuesBack.path, IMAGE_QUES_BACK_PATH);		//パスの設定
+	ImageQuesBack.handle = LoadGraph(ImageQuesBack.path);	//読み込み
+	if (ImageQuesBack.handle == -1)
+	{
+		//エラーメッセージ表示
+		MessageBox(GetMainWindowHandle(), IMAGE_QUES_BACK_PATH, IMAGE_LOAD_ERR_TITLE, MB_OK);
+		return FALSE;
+	}
+	GetGraphSize(ImageQuesBack.handle, &ImageQuesBack.width, &ImageQuesBack.height);	//画像の幅と高さを取得
+	ImageQuesBack.x = GAME_WIDTH / 2 - ImageQuesBack.width / 2;		//左右中央揃え
+	ImageQuesBack.y = GAME_HEIGHT / 2 - ImageQuesBack.height / 2;	//上下中央揃え
+
 	//問題１画像
 	strcpy_s(ImageQues[0].path, IMAGE_QUES_1_PATH);		//パスの設定
 	ImageQues[0].handle = LoadGraph(ImageQues[0].path);	//読み込み
@@ -1188,6 +1335,20 @@ BOOL MY_LOAD_IMAGE(VOID)
 	ImageQues[0].x = GAME_WIDTH / 2 - ImageQues[0].width / 2;		//左右中央揃え
 	ImageQues[0].y = GAME_HEIGHT / 2 - ImageQues[0].height / 2;	    //上下中央揃え
 	ImageQues[0].IsDraw = FALSE;
+
+	//問題2画像
+	strcpy_s(ImageQues[1].path, IMAGE_QUES_1_PATH);		//パスの設定
+	ImageQues[1].handle = LoadGraph(ImageQues[0].path);	//読み込み
+	if (ImageQues[1].handle == -1)
+	{
+		//エラーメッセージ表示
+		MessageBox(GetMainWindowHandle(), IMAGE_QUES_1_PATH, IMAGE_LOAD_ERR_TITLE, MB_OK);
+		return FALSE;
+	}
+	GetGraphSize(ImageQues[1].handle, &ImageQues[1].width, &ImageQues[1].height);	//画像の幅と高さを取得
+	ImageQues[1].x = GAME_WIDTH / 2 - ImageQues[1].width / 2;		//左右中央揃え
+	ImageQues[1].y = GAME_HEIGHT / 2 - ImageQues[1].height / 2;	    //上下中央揃え
+	ImageQues[1].IsDraw = FALSE;
 
 	//正解画像
 	strcpy_s(ImageRight.path, IMAGE_RIGHT_PATH);		//パスの設定
@@ -1216,6 +1377,19 @@ BOOL MY_LOAD_IMAGE(VOID)
 	ImageWrong.x = GAME_WIDTH / 2 - ImageWrong.width / 2;		//左右中央揃え
 	ImageWrong.y = GAME_HEIGHT / 2 - ImageWrong.height / 2;	    //上下中央揃え
 	ImageWrong.IsDraw = FALSE;
+
+	//ストーリー背景画像
+	strcpy_s(ImageStoryBack.path, IMAGE_STORY_BACK_PATH);		//パスの設定
+	ImageStoryBack.handle = LoadGraph(ImageStoryBack.path);	//読み込み
+	if (ImageStoryBack.handle == -1)
+	{
+		//エラーメッセージ表示
+		MessageBox(GetMainWindowHandle(), IMAGE_STORY_BACK_PATH, IMAGE_LOAD_ERR_TITLE, MB_OK);
+		return FALSE;
+	}
+	GetGraphSize(ImageStoryBack.handle, &ImageStoryBack.width, &ImageStoryBack.height);	//画像の幅と高さを取得
+	ImageStoryBack.x = GAME_WIDTH / 2 - ImageStoryBack.width / 2;		//左右中央揃え
+	ImageStoryBack.y = GAME_HEIGHT / 2 - ImageStoryBack.height / 2;	//上下中央揃え
 
 	//エンド背景画像
 	strcpy_s(ImageEndBack.path, IMAGE_END_BACK_PATH);		//パスの設定
