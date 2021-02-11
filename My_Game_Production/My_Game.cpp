@@ -51,8 +51,8 @@
 #define IMAGE_STORY_BACK_PATH   TEXT(".\\IMAGE\\Title_bg.jpg")               //ƒXƒg[ƒŠ[”wŒi
 #define IMAGE_NEXT_PATH         TEXT(".\\IMAGE\\Next.png")                   //‚Â‚¬‚Öƒ{ƒ^ƒ“
 #define IMAGE_NEXT2_PATH        TEXT(".\\IMAGE\\Next2.png")                  //‚Â‚¬‚Öƒ{ƒ^ƒ“hover
-#define IMAGE_END_BACK_PATH     TEXT(".\\IMAGE\\ƒQ[ƒ€ƒI[ƒo[®‚P.png")        //ƒGƒ“ƒh”wŒi
-#define IMAGE_END_CLEAR_PATH     TEXT(".\\IMAGE\\ƒQ[ƒ€ƒI[ƒo[®‚P.png")        //ƒGƒ“ƒh”wŒi
+#define IMAGE_END_BACK_PATH     TEXT(".\\IMAGE\\ƒQ[ƒ€ƒI[ƒo[®‚P.png")     //ƒQ[ƒ€ƒI[ƒo[”wŒi
+#define IMAGE_END_CLEAR_PATH     TEXT(".\\IMAGE\\”wŒiQ•Öâ³.png")            //ƒNƒŠƒA”wŒi
 
 
 //‰æ‘œŠÖ˜A
@@ -87,9 +87,9 @@
 #define COUNTDIST              2
 
 //ƒƒbƒZ[ƒW‚Ì•\Ž¦
-#define MESSAGE_FONT_SIZE      20          //ƒƒbƒZ[ƒW‚ÌƒtƒHƒ“ƒg‚Ì‘å‚«‚³
-#define MESSAGE_MAX_LENGTH     30          //Å‘å•¶Žš”
-#define MESSAGE_MAX_LINE       5           //Å‘ås”
+#define MESSAGE_FONT_SIZE      50          //ƒƒbƒZ[ƒW‚ÌƒtƒHƒ“ƒg‚Ì‘å‚«‚³
+#define MESSAGE_MAX_LENGTH     50          //Å‘å•¶Žš”
+#define MESSAGE_MAX_LINE       10           //Å‘ås”
 #define MESSAGE_BOX_X          0          //ƒƒbƒZ[ƒWƒ{ƒbƒNƒX‚ÌXÀ•W
 #define MESSAGE_BOX_Y          0           //ƒƒbƒZ[ƒWƒ{ƒbƒNƒX‚ÌYÀ•W
 #define MESSAGE_BOX_GRAPHIC_FILENAME       "./IMAGE/”wŒiQ•‹Ø.png"
@@ -185,7 +185,7 @@ int SampleNumFps = GAME_FPS;	//•½‹Ï‚ðŽæ‚éƒTƒ“ƒvƒ‹”
 char AllKeyState[KEY_CODE_KIND] = { '\0' };		//‚·‚×‚Ä‚ÌƒL[‚Ìó‘Ô‚ª“ü‚é
 char OldAllKeyState[KEY_CODE_KIND] = { '\0' };	//‚·‚×‚Ä‚ÌƒL[‚Ìó‘Ô(’¼‘O)‚ª“ü‚é
 char Answer[51];                                //“š‚¦‚Ì•¶Žš”z—ñ•Û‘¶
-char ANSER[5][40] = { "‚¢‚ñ‚¿‚å‚¤","‚ ","‚¢","‚¤","‚¦"};             //–â‘è‚Ì“š‚¦
+//char ANSER[5][40] = { "‚¢‚ñ‚¿‚å‚¤","‚ ","‚¢","‚¤","‚¦"};             //–â‘è‚Ì“š‚¦
 
 //ƒ}ƒEƒX‚ÌÀ•W‚ðŽæ“¾
 MOUSE mouse;
@@ -208,8 +208,9 @@ IMAGE		ImageRight;              //³‰ð
 IMAGE		ImageWrong;              //•s³‰ð
 IMAGE		ImageStoryBack;          //ƒXƒg[ƒŠ[‰æ–Ê”wŒi‰æ‘œ
 IMAGE		ImageNextBtn;            //‚Â‚¬‚Öƒ{ƒ^ƒ“‰æ‘œ
-IMAGE		ImageNextBtn2;            //‚Â‚¬‚Öƒ{ƒ^ƒ“‰æ‘œHover
-IMAGE		ImageEndBack;            //ƒGƒ“ƒh”wŒi‰æ‘œ
+IMAGE		ImageNextBtn2;           //‚Â‚¬‚Öƒ{ƒ^ƒ“‰æ‘œHover
+IMAGE		ImageEndBack;            //ƒQ[ƒ€ƒI[ƒo[‰æ‘œ
+IMAGE       ImageEndClear;           //ƒNƒŠƒA‰æ‘œ
 
 //‰¹ŠyŠÖ˜A
 MUSIC BGM_TITLE;			   //ƒ^ƒCƒgƒ‹‚ÌBGM
@@ -233,7 +234,7 @@ static int currentLineCursor = 0;                            //‰½s–Ú‚ð•\Ž¦‚µ‚Ä‚
 static int whiteColor;
 static int blackColor;
 static int messageBoxGraphHandle;
-int isJapanise(unsigned char code);
+int isJapanese(unsigned char code);
 
 
 //########## ƒvƒƒgƒ^ƒCƒvéŒ¾ ##########
@@ -667,7 +668,7 @@ VOID MY_START_PROC(VOID)
 		&& mouse.Point.y >= ImageEasyRogo.y 
 		&& mouse.Point.y <= ImageEasyRogo.y+ImageEasyRogo.height)
 	{
-		if (MY_MOUSE_UP(MOUSE_INPUT_LEFT) == TRUE)
+		if (MY_MOUSE_DOWN(MOUSE_INPUT_LEFT) == TRUE)
 		{
 			//BGM‚ª—¬‚ê‚Ä‚¢‚é‚È‚ç
 			if (CheckSoundMem(BGM_TITLE.handle) != 0)
@@ -755,7 +756,7 @@ VOID MY_START_DRAW(VOID)
 	return;
 }
 
-//ƒvƒŒƒC‰æ–Ê
+//ƒ‹[ƒ‹‰æ–Ê
 VOID MY_PLAY_RULE(VOID)
 {
 	MY_PLAY_RULE_PROC();	//ƒvƒŒƒC‰æ–Ê‚Ìˆ—
@@ -766,7 +767,7 @@ VOID MY_PLAY_RULE(VOID)
 	return;
 }
 
-//ƒvƒŒƒC‰æ–Ê‚Ìˆ—
+//ƒ‹[ƒ‹‰æ–Ê‚Ìˆ—
 VOID MY_PLAY_RULE_PROC(VOID)
 {
 	//ƒNƒŠƒbƒN‚·‚é‚Æ–â‘è‰æ–Ê‚Ö
@@ -801,7 +802,7 @@ VOID MY_PLAY_RULE_PROC(VOID)
 	return;
 }
 
-//ƒvƒŒƒC‰æ–Ê‚Ì•`‰æ
+//ƒ‹[ƒ‹‰æ–Ê‚Ì•`‰æ
 VOID MY_PLAY_RULE_DRAW(VOID)
 {
 	//”wŒi‚ð•`‰æ‚·‚é
@@ -827,6 +828,7 @@ VOID MY_PLAY_QUES_EASY()
 VOID MY_PLAY_QUES_EASY_PROC()
 {
 	QuesKind = QUES_END_WRONG;
+
 	//SƒL[‚ð‰Ÿ‚µ‚½‚çAƒXƒg[ƒŠ[ƒV[ƒ“‚ÖˆÚ“®‚·‚é
 	if (MY_KEY_DOWN(KEY_INPUT_S) == TRUE)
 	{
@@ -886,55 +888,110 @@ VOID MY_PLAY_QUES_EASY_PROC()
 
 if (ImageQues[CountQues].IsDraw)    //‘I‘ðŽˆˆ—
 {
-	if (mouse.Point.x >= BOX_SIZE_X
-		&& mouse.Point.x <= BOX_SIZE_X + 100
-		&& mouse.Point.y >= BOX_SIZE_Y
-		&& mouse.Point.y <= BOX_SIZE_Y + 20)
+	if (CountQues == 0)
 	{
-		DrawString(BOX_SIZE_X + 46, BOX_SIZE_Y + 2, "A", GetColor(0, 0, 0));
-		if (MY_MOUSE_UP(MOUSE_INPUT_LEFT) == TRUE)
+		if (mouse.Point.x >= BOX_SIZE_X
+			&& mouse.Point.x <= BOX_SIZE_X + 100
+			&& mouse.Point.y >= BOX_SIZE_Y
+			&& mouse.Point.y <= BOX_SIZE_Y + 20)
 		{
-			QuesKind = QUES_END_WRONG;
-			DrawGraph(ImageWrong.x, ImageWrong.y, ImageWrong.handle, TRUE);
-			ImageQues[CountQues].IsDraw = FALSE;
-			CountWrong++;
-			CountQues++;
+			DrawString(BOX_SIZE_X + 46, BOX_SIZE_Y + 2, "A", GetColor(0, 0, 0));
+			if (MY_MOUSE_UP(MOUSE_INPUT_LEFT) == TRUE)
+			{
+				QuesKind = QUES_END_WRONG;
+				DrawGraph(ImageWrong.x, ImageWrong.y, ImageWrong.handle, TRUE);
+				ImageQues[CountQues].IsDraw = FALSE;
+				CountWrong++;
+				CountQues++;
+			}
+		}
+		else if (mouse.Point.x >= BOX_SIZE_X
+			&& mouse.Point.x <= BOX_SIZE_X + 300
+			&& mouse.Point.y >= BOX_SIZE_Y
+			&& mouse.Point.y <= BOX_SIZE_Y + 20)
+		{
+			DrawString(BOX_SIZE_X + 246, BOX_SIZE_Y + 2, "B", GetColor(0, 0, 0));
+			if (MY_MOUSE_UP(MOUSE_INPUT_LEFT) == TRUE)
+			{
+				QuesKind = QUES_END_RIGHT;
+				DrawGraph(ImageRight.x, ImageRight.y, ImageRight.handle, TRUE);
+				ImageQues[CountQues].IsDraw = FALSE;
+				CountRight++;
+				CountQues++;
+				GameScene = GAME_SCENE_STORY;
+				return;
+			}
+		}
+		else if (mouse.Point.x >= BOX_SIZE_X
+			&& mouse.Point.x <= BOX_SIZE_X + 500
+			&& mouse.Point.y >= BOX_SIZE_Y
+			&& mouse.Point.y <= BOX_SIZE_Y + 20)
+		{
+			DrawString(BOX_SIZE_X + 446, BOX_SIZE_Y + 2, "C", GetColor(0, 0, 0));
+			if (MY_MOUSE_UP(MOUSE_INPUT_LEFT) == TRUE)
+			{
+				QuesKind = QUES_END_WRONG;
+				DrawGraph(ImageWrong.x, ImageWrong.y, ImageWrong.handle, TRUE);
+				ImageQues[CountQues].IsDraw = FALSE;
+				CountWrong++;
+				CountQues++;
+			}
 		}
 	}
-	else if (mouse.Point.x >= BOX_SIZE_X
-		&& mouse.Point.x <= BOX_SIZE_X + 300
-		&& mouse.Point.y >= BOX_SIZE_Y
-		&& mouse.Point.y <= BOX_SIZE_Y + 20)
+	else if (CountQues == 1)
 	{
-		DrawString(BOX_SIZE_X + 246, BOX_SIZE_Y + 2, "B", GetColor(0, 0, 0));
-		if (MY_MOUSE_UP(MOUSE_INPUT_LEFT) == TRUE)
+		if (mouse.Point.x >= BOX_SIZE_X
+			&& mouse.Point.x <= BOX_SIZE_X + 100
+			&& mouse.Point.y >= BOX_SIZE_Y
+			&& mouse.Point.y <= BOX_SIZE_Y + 20)
 		{
-			QuesKind = QUES_END_RIGHT;
-			DrawGraph(ImageRight.x, ImageRight.y, ImageRight.handle, TRUE);
-			ImageQues[CountQues].IsDraw = FALSE;
-			CountRight++;
-			CountQues++;
-			GameScene = GAME_SCENE_STORY;
-			return;
+			DrawString(BOX_SIZE_X + 46, BOX_SIZE_Y + 2, "A", GetColor(0, 0, 0));
+			if (MY_MOUSE_UP(MOUSE_INPUT_LEFT) == TRUE)
+			{
+				QuesKind = QUES_END_WRONG;
+				DrawGraph(ImageWrong.x, ImageWrong.y, ImageWrong.handle, TRUE);
+				ImageQues[CountQues].IsDraw = FALSE;
+				CountWrong++;
+				CountQues++;
+			}
 		}
-	}
-	else if (mouse.Point.x >= BOX_SIZE_X
-		&& mouse.Point.x <= BOX_SIZE_X + 500
-		&& mouse.Point.y >= BOX_SIZE_Y
-		&& mouse.Point.y <= BOX_SIZE_Y + 20)
-	{
-		DrawString(BOX_SIZE_X + 446, BOX_SIZE_Y + 2, "C", GetColor(0, 0, 0));
-		if (MY_MOUSE_UP(MOUSE_INPUT_LEFT) == TRUE)
+		else if (mouse.Point.x >= BOX_SIZE_X
+			&& mouse.Point.x <= BOX_SIZE_X + 300
+			&& mouse.Point.y >= BOX_SIZE_Y
+			&& mouse.Point.y <= BOX_SIZE_Y + 20)
 		{
-			QuesKind = QUES_END_WRONG;
-			DrawGraph(ImageWrong.x, ImageWrong.y, ImageWrong.handle, TRUE);
-			ImageQues[CountQues].IsDraw = FALSE;
-			CountWrong++;
-			CountQues++;
-		}
-	}
+			DrawString(BOX_SIZE_X + 246, BOX_SIZE_Y + 2, "B", GetColor(0, 0, 0));
+			if (MY_MOUSE_UP(MOUSE_INPUT_LEFT) == TRUE)
+			{
+				QuesKind = QUES_END_WRONG;
+				DrawGraph(ImageWrong.x, ImageWrong.y, ImageWrong.handle, TRUE);
+				ImageQues[CountQues].IsDraw = FALSE;
+				CountWrong++;
+				CountQues++;
 
-	if (CountRight == 5)
+			}
+		}
+		else if (mouse.Point.x >= BOX_SIZE_X
+			&& mouse.Point.x <= BOX_SIZE_X + 500
+			&& mouse.Point.y >= BOX_SIZE_Y
+			&& mouse.Point.y <= BOX_SIZE_Y + 20)
+		{
+			DrawString(BOX_SIZE_X + 446, BOX_SIZE_Y + 2, "C", GetColor(0, 0, 0));
+			if (MY_MOUSE_UP(MOUSE_INPUT_LEFT) == TRUE)
+			{
+				QuesKind = QUES_END_RIGHT;
+				DrawGraph(ImageRight.x, ImageRight.y, ImageRight.handle, TRUE);
+				ImageQues[CountQues].IsDraw = FALSE;
+				CountRight++;
+				CountQues++;
+				GameScene = GAME_SCENE_STORY;
+				return;
+			}
+		}
+	}	
+	
+
+	if (CountRight == 2)
 	{
 		GameScene = GAME_SCENE_END;
 		return;
@@ -946,8 +1003,6 @@ if (ImageQues[CountQues].IsDraw)    //‘I‘ðŽˆˆ—
 	}
 }
 	
-
-
 	return;
 }
 
@@ -963,15 +1018,15 @@ VOID MY_PLAY_QUES_EASY_DRAW()
 	if (ImageQues[CountQues].IsDraw == TRUE)
 	{
 		DrawGraph(ImageQues[CountQues].x, ImageQues[CountQues].y, ImageQues[CountQues].handle, TRUE);
-		DrawBox(BOX_SIZE_X, BOX_SIZE_Y, BOX_SIZE_X+100, BOX_SIZE_Y+20, GetColor(255, 0, 0), TRUE);
-		DrawString(BOX_SIZE_X + 46, BOX_SIZE_Y+2, "A", GetColor(255, 255, 255));
+		DrawBox(BOX_SIZE_X, BOX_SIZE_Y, BOX_SIZE_X + 100, BOX_SIZE_Y + 20, GetColor(255, 0, 0), TRUE);
+		DrawString(BOX_SIZE_X + 46, BOX_SIZE_Y + 2, "A", GetColor(255, 255, 255));
 
-		DrawBox(BOX_SIZE_X+200, BOX_SIZE_Y, BOX_SIZE_X + 300, BOX_SIZE_Y + 20, GetColor(0, 255, 0), TRUE);
-		DrawString(BOX_SIZE_X + 246, BOX_SIZE_Y+2, "B", GetColor(255, 255, 255));
+		DrawBox(BOX_SIZE_X + 200, BOX_SIZE_Y, BOX_SIZE_X + 300, BOX_SIZE_Y + 20, GetColor(0, 255, 0), TRUE);
+		DrawString(BOX_SIZE_X + 246, BOX_SIZE_Y + 2, "B", GetColor(255, 255, 255));
 
-		DrawBox(BOX_SIZE_X+400, BOX_SIZE_Y, BOX_SIZE_X + 500, BOX_SIZE_Y + 20, GetColor(0, 0, 255), TRUE);
-		DrawString(BOX_SIZE_X + 446, BOX_SIZE_Y+2 , "C", GetColor(255, 255, 255));
-		
+		DrawBox(BOX_SIZE_X + 400, BOX_SIZE_Y, BOX_SIZE_X + 500, BOX_SIZE_Y + 20, GetColor(0, 0, 255), TRUE);
+		DrawString(BOX_SIZE_X + 446, BOX_SIZE_Y + 2, "C", GetColor(255, 255, 255));
+			
 	}
 	
 
@@ -1042,9 +1097,9 @@ VOID MY_PLAY_STORY_PROC()
 
 	if (CountQues == 0)
 	{
-		if (MY_MOUSE_UP(MOUSE_INPUT_LEFT) == TRUE)
+		if (MY_MOUSE_DOWN(MOUSE_INPUT_LEFT) == TRUE)
 		{
-			setMessage("‚¨‚Í‚æ‚¤");
+			setMessage("‚ ‚é“ú‰ö‰ä‚ð‚µ‚Ä‚µ‚Ü‚Á‚½‚ ‚È‚½‚ÍÅ‹ß‚Å‚«‚½•a‰@‚É“ü‰@‚·‚é‚±‚Æ‚ÉB‚µ‚©‚µ‚»‚Ì•a‰@‚Ì‰@’·‚Íf’f‚ð‹U‚èA•al‚ÌŒ’N‚È‘ŸŠí‚ðØœ‚µŽûW‚·‚éŽï–¡‚ðŽ‚ÂA‹¶‚Á‚½‚â‚Â‚¾‚Á‚½B‹ô‘RA‚»‚Ì‚±‚Æ‚ð•·‚¢‚Ä‚µ‚Ü‚Á‚½‚ ‚È‚½‚ÍAŽ©•ª‚Ì”Ô‚É‚È‚é‘O‚É•a‰@‚©‚ç’Eo‚·‚é‚±‚Æ‚ÉŒˆ‚ß‚½B•al‚ð“¦‚ª‚µ‚½‚­‚È‚¢‰@’·‚ÍA‚ ‚ç‚©‚¶‚ß‚ ‚ç‚ä‚éêŠ‚ðŽ{ù‚µA•Â‚¶ž‚ß‚Ä‚¢‚½B‚»‚µ‚ÄA‚Ü‚é‚Å‚±‚ê‚Í’EoƒQ[ƒ€‚¾‚ÆŒ¾‚¤‚æ‚¤‚É“ä‚ðŠeŠ‚É’u‚¢‚Ä‚¢‚½B‚¢‚«‚È‚è“ä‚ª’u‚¢‚Ä‚ ‚é‚±‚Æ‚É¢˜f‚µ‚Â‚Â‚à‘¼‚É’Eo•û–@‚à–³‚³‚»‚¤‚È‚Ì‚Å“ä‚ð‰ð‚­‚±‚Æ‚É‚·‚éc");
 		}
 	}
 	else if (CountQues == 1)
@@ -1197,8 +1252,17 @@ VOID MY_END_PROC(VOID)
 //ƒGƒ“ƒh‰æ–Ê‚Ì•`‰æ
 VOID MY_END_DRAW(VOID)
 {
-	//”wŒi‚ð•`‰æ‚·‚é
-	DrawGraph(ImageEndBack.x, ImageEndBack.y, ImageEndBack.handle, TRUE);
+	if (CountRight == 2)
+	{
+		//ƒNƒŠƒA‚ð•`‰æ‚·‚é
+		DrawGraph(ImageEndClear.x, ImageEndClear.y, ImageEndClear.handle, TRUE);
+	}
+	else
+	{
+		//ƒQ[ƒ€ƒI[ƒo[‚ð•`‰æ‚·‚é
+		DrawGraph(ImageEndBack.x, ImageEndBack.y, ImageEndBack.handle, TRUE);
+	}
+	
 
 	return;
 }
@@ -1444,12 +1508,12 @@ BOOL MY_LOAD_IMAGE(VOID)
 	ImageQues[0].IsDraw = FALSE;
 
 	//–â‘è2‰æ‘œ
-	strcpy_s(ImageQues[1].path, IMAGE_QUES_1_PATH);		//ƒpƒX‚ÌÝ’è
-	ImageQues[1].handle = LoadGraph(ImageQues[0].path);	//“Ç‚Ýž‚Ý
+	strcpy_s(ImageQues[1].path, IMAGE_QUES_2_PATH);		//ƒpƒX‚ÌÝ’è
+	ImageQues[1].handle = LoadGraph(ImageQues[1].path);	//“Ç‚Ýž‚Ý
 	if (ImageQues[1].handle == -1)
 	{
 		//ƒGƒ‰[ƒƒbƒZ[ƒW•\Ž¦
-		MessageBox(GetMainWindowHandle(), IMAGE_QUES_1_PATH, IMAGE_LOAD_ERR_TITLE, MB_OK);
+		MessageBox(GetMainWindowHandle(), IMAGE_QUES_2_PATH, IMAGE_LOAD_ERR_TITLE, MB_OK);
 		return FALSE;
 	}
 	GetGraphSize(ImageQues[1].handle, &ImageQues[1].width, &ImageQues[1].height);	//‰æ‘œ‚Ì•‚Æ‚‚³‚ðŽæ“¾
@@ -1524,7 +1588,7 @@ BOOL MY_LOAD_IMAGE(VOID)
 	ImageNextBtn2.x = GAME_WIDTH / 2 + ImageNextBtn.width * 2;                              //’†‰›Šñ‚¹-‰æ‘œ•~‚Q
 	ImageNextBtn2.y = GAME_HEIGHT / 2 + ImageNextBtn2.height * 3;				            //’†‰›Šñ‚¹+‰æ‘œ•~‚Q
 
-	//ƒGƒ“ƒh”wŒi‰æ‘œ
+	//ƒQ[ƒ€ƒI[ƒo[‰æ‘œ
 	strcpy_s(ImageEndBack.path, IMAGE_END_BACK_PATH);		//ƒpƒX‚ÌÝ’è
 	ImageEndBack.handle = LoadGraph(ImageEndBack.path);	//“Ç‚Ýž‚Ý
 	if (ImageEndBack.handle == -1)
@@ -1536,6 +1600,19 @@ BOOL MY_LOAD_IMAGE(VOID)
 	GetGraphSize(ImageEndBack.handle, &ImageEndBack.width, &ImageEndBack.height);	//‰æ‘œ‚Ì•‚Æ‚‚³‚ðŽæ“¾
 	ImageEndBack.x = GAME_WIDTH / 2 - ImageEndBack.width / 2;		//¶‰E’†‰›‘µ‚¦
 	ImageEndBack.y = GAME_HEIGHT / 2 - ImageEndBack.height / 2;	//ã‰º’†‰›‘µ‚¦
+
+	//ƒNƒŠƒA‰æ‘œ
+	strcpy_s(ImageEndClear.path, IMAGE_END_CLEAR_PATH);		//ƒpƒX‚ÌÝ’è
+	ImageEndClear.handle = LoadGraph(ImageEndClear.path);	//“Ç‚Ýž‚Ý
+	if (ImageEndClear.handle == -1)
+	{
+		//ƒGƒ‰[ƒƒbƒZ[ƒW•\Ž¦
+		MessageBox(GetMainWindowHandle(), IMAGE_END_CLEAR_PATH, IMAGE_LOAD_ERR_TITLE, MB_OK);
+		return FALSE;
+	}
+	GetGraphSize(ImageEndClear.handle, &ImageEndClear.width, &ImageEndClear.height);	//‰æ‘œ‚Ì•‚Æ‚‚³‚ðŽæ“¾
+	ImageEndClear.x = GAME_WIDTH / 2 - ImageEndClear.width / 2;		//¶‰E’†‰›‘µ‚¦
+	ImageEndClear.y = GAME_HEIGHT / 2 - ImageEndClear.height / 2;	//ã‰º’†‰›‘µ‚¦
 
 
 	return TRUE;
@@ -1623,7 +1700,7 @@ VOID MY_DELETE_MUSIC(VOID)
 	return;
 }
 
-int isJapanise(unsigned char code)
+int isJapanese(unsigned char code)
 {
 	if ((code >= 0x81 && code <= 0x9F) ||
 		(code >= 0xE0 && code <= 0xFC))
@@ -1633,93 +1710,101 @@ int isJapanise(unsigned char code)
 	return 0;
 }
 
-VOID writeSubstring(char* message, int start, int len,
-	int PosX, int PosY, int color, int bufferLine)
+// m e s s a g e‚ÅŽw’è‚µ‚½•¶Í‚ð start ‚Ì ˆÊ ’u ‚© ‚ç len •¶ Žš •ª •\ Ž¦ ‚· ‚é
+ void writeSubstring(char* message, int start, int len,
+	 int posX, int posY, int color, int bufferLine)
+	 {
+	 int i;
+	 //•¶Žš”
+		 int maxLen = strlen(message);
+	
+		 // s t a r t ‚Ì ˆÊ ’u ‚ð •Ï X ‚· ‚é
+		 // s t a r t ‚Ì ˆÊ ’u ‚Ü ‚Å ‚É “ú –{ Œê ‚ª ‚Å ‚Ä ‚« ‚Ä ‚¢ ‚½ ‚ç C 1 ‚ð ‘« ‚µ ‚Ä ‚¢ ‚­
+		 for (i = 0; i < start && message[i] != '\0'; ) {
+		 if (isJapanese(message[i])) {
+			 //“ú–{Œê‚Ìê‡C2ƒo ƒC ƒg •ª ‚· ‚· ‚ß ‚é
+				 i += 2;
+			 // s t a r t‚É1ƒoƒCƒg•ª‘«‚·
+				 start++;
+		}
+		else {
+		 //”¼Šp•¶Žš‚Ìê‡C1ƒo ƒC ƒg •ª i ‚ß ‚é
+				 i++;
+		}
+	}
+		 // s t a r t ‚Ì ˆÊ ’u ‚ª •\ Ž¦ ‚µ ‚½ ‚¢ Å ‘å •¶ Žš ” ‚æ ‚è ‘å ‚« ‚¢ ê ‡
+		 if (start >= maxLen) {
+		 return;
+		
+	}
+	
+		 //Žw’è‚µ‚½ˆÊ’u‚©‚ç l e n •¶ Žš •ª •\ Ž¦ ‚· ‚é
+		 for (i = 0; i < len && message[start + i] != '\0'; ) {
+		 if (isJapanese(message[start + i])) {
+			 //“ú–{Œê‚Ìê‡C2•¶ Žš •ª b u f f e r‚ÉƒZƒbƒg
+				messageBuffer[bufferLine][i] = message[start + i];
+			    messageBuffer[bufferLine][i + 1] = message[start + i + 1];
+			 // l e n ‚Í “ú –{ Œê ‚È ‚Ì ‚Å C 1 ƒo ƒC ƒg •ª ’Ç ‰Á ‚· ‚é
+				 len++;
+			 //2ƒo ƒC ƒg •ª i ‚ß ‚é
+				 i += 2;
+		}
+		else {
+				 //”¼Šp•¶Žš1•¶ Žš ‚ð ƒZ ƒb ƒg
+				 messageBuffer[bufferLine][i] = message[start + i]; 
+				 i++; //1ƒo ƒC ƒg •ª i ‚ß ‚é
+		}
+	}
+		 messageBuffer[bufferLine][i] = '\0';
+	 //ƒƒbƒZ[ƒW•`‰æ
+		 DrawString(posX, posY, messageBuffer[bufferLine], color);
+ }
+
+
+//ƒƒbƒZ[ƒW•`‰æ
+VOID drawMessage()
 {
 	int i; 
-	int maxLen = strlen(message);  //•¶Žš”
+	
+	//ƒƒbƒZ[ƒWƒ{ƒbƒNƒX•`‰æ
+	   DrawGraph(MESSAGE_BOX_X, MESSAGE_BOX_Y, messageBoxGraphHandle, FALSE);
 
-	for (i = 0; i < start && message[i] != '\0';)
-	{
-		if (isJapanise(message[i])) //“ú–{Œê‚È‚ç2ƒoƒCƒgi‚ß‚é
-		{
-			i += 2;
-			start++;
-		}
-		else    //”¼Šp•¶Žš‚È‚ç1ƒoƒCƒgi‚ß‚é
-		{
-			i++;
-		}
+		 if (message[currentCursor] != '\0') {
+		    currentCursor++;
 	}
-
-	if (start >= maxLen)
-	{
-		return;
-	}
-
-	for (i = 0; i < len && message[start + i] != '\0';)
-	{
-		if (isJapanise(message[start + 1]))
-		{
-			messageBuffer[bufferLine][i] = message[start + i];
-			messageBuffer[bufferLine][i + 1] = message[start + i + 1];
-			len++;
-			i += 2;
+	
+		// MESSAGE_MAX_LENGTH ‚Ü ‚Å •¶ Žš ‚ð •` ‰æ ‚µ ‚½ ‚ç ’i —Ž ‚ð Ø ‚è ‘Ö ‚¦ ‚é
+		if (currentCursor % MESSAGE_MAX_LENGTH == 0) {
+		if (message[currentCursor] != '\0') {
+			 currentLineCursor++;
 		}
-		else
-		{
-			messageBuffer[bufferLine][i] = message[start + i];     //”¼Šp•¶Žš‚ð‘ã“ü
-			i++;  //1ƒoƒCƒgi‚ß‚é
+		
+	}
+	
+		 //ƒƒbƒZ[ƒW•`‰æ•”•ª
+		 for (i = 0; i < MESSAGE_MAX_LINE; i++) {
+		 if (i == currentLineCursor) {
+			 //ƒƒbƒZ[ƒW•—‚É•\Ž¦
+				 writeSubstring(message, i * MESSAGE_MAX_LENGTH,
+					 currentCursor - MESSAGE_MAX_LENGTH * i,
+					 MESSAGE_BOX_X + 200,
+					 MESSAGE_BOX_Y + MESSAGE_FONT_SIZE * i + 250,
+					 whiteColor, i);
+			 break;
+			
 		}
-	}
-	messageBuffer[bufferLine][i] = '\0';
-
-	DrawString(PosX, PosY, messageBuffer[bufferLine], color);   //ƒƒbƒZ[ƒW•`‰æ
-}
-
-VOID drawMessage(VOID)
-{
-	int i;
-
-	if (strnlen(message, MESSAGE_MAX_LENGTH * MESSAGE_MAX_LINE) <= 0)   //•¶Žš‚ª‘ã“ü‚³‚ê‚Ä‚¢‚È‚©‚Á‚½‚çƒƒbƒZ[ƒWƒ{ƒbƒNƒX‚ð•\Ž¦‚µ‚È‚¢
-	{
-		return;
-	}
-
-	DrawGraph(MESSAGE_BOX_X, MESSAGE_BOX_Y, messageBoxGraphHandle, FALSE);  //ƒƒbƒZ[ƒWƒ{ƒbƒNƒX‚ð•\Ž¦
-
-	if (message[currentCursor] != '\0')
-	{
-		currentCursor++;
-	}
-
-	if (currentCursor % MESSAGE_MAX_LENGTH == 0)     //’i—Ž‚ÌØ‚è‘Ö‚¦
-	{
-		if (message[currentCursor] != '\0')
-		{
-			currentLineCursor++;
+		else {
+			 //ƒƒbƒZ[ƒW‚ð‚»‚Ì‚Ü‚Ü•\Ž¦
+			 writeSubstring(message, i * MESSAGE_MAX_LENGTH,
+					 MESSAGE_MAX_LENGTH, MESSAGE_BOX_X + 200,
+					 MESSAGE_BOX_Y + MESSAGE_FONT_SIZE * i + 250,
+					 whiteColor, i);
+			
 		}
+		
 	}
+	 }
 
-	for (i = 0; i < MESSAGE_MAX_LINE; i++)    //ƒƒbƒZ[ƒW•`‰æ
-	{
-		if (i == currentLineCursor)
-		{
-			writeSubstring(message, i * MESSAGE_MAX_LENGTH,
-				currentCursor - MESSAGE_MAX_LENGTH * i, MESSAGE_BOX_X + 100,
-				MESSAGE_BOX_Y + MESSAGE_FONT_SIZE * i + 100,
-				whiteColor, i);
-			break;
-		}
-		else
-		{
-			writeSubstring(message, i * MESSAGE_MAX_LENGTH,
-				MESSAGE_MAX_LENGTH, MESSAGE_BOX_X + 100,
-				MESSAGE_BOX_Y + MESSAGE_FONT_SIZE * i + 100,
-				whiteColor, i);
-		}
-	}
-}
 
 VOID setMessage(const char* ms)  //•`‰æ‚µ‚½‚¢ƒƒbƒZ[ƒW‚ðƒZƒbƒg
 {
